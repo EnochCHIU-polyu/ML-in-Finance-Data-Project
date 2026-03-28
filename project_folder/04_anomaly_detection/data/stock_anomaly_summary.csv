@@ -1,0 +1,5 @@
+Name,total_days,if_anomalies,lof_anomalies,svm_anomalies,z_anomalies,consensus_anomalies,consensus_rate_%
+AAPL,1239,56,56,48,63,34,2.74
+AMZN,1239,89,93,95,107,74,5.97
+GOOGL,1239,49,41,51,53,33,2.66
+MSFT,1239,54,58,58,67,45,3.63
