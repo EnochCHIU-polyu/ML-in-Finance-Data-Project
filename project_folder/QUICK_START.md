@@ -283,7 +283,7 @@ If that fails, run in terminal: pip install xgboost
 - [x] Financial analysis in each notebook
 - [x] Documentation and README
 - [x] GPU support configured
-- [x] Top 5 stocks: AAPL, MSFT, GOOGL, AMZN, TSLA
+- [x] Top 5 stocks: AAPL, MSFT, GOOGL, AMZN, NVDA
 - [x] Production-ready code
 
 ---

@@ -170,7 +170,7 @@ Packages auto-install in each notebook via `%pip install` magic command
 ### Data Source
 - **Dataset:** S&P 500 Stock Market Data
 - **Source:** Kaggle (via kagglehub)
-- **Stocks Used:** Full dataset, top 5 for detailed analysis (AAPL, MSFT, GOOGL, AMZN, TSLA)
+- **Stocks Used:** Full dataset, top 5 for detailed analysis (AAPL, MSFT, GOOGL, AMZN, NVDA)
 
 ---
 
@@ -290,7 +290,7 @@ Each notebook generates professional visualizations saved as PNG files:
 ### Top 5 Stocks (Used for Detailed Analysis)
 ```
 AAPL (Apple), MSFT (Microsoft), GOOGL (Google)
-AMZN (Amazon), TSLA (Tesla)
+AMZN (Amazon), NVDA
 ```
 
 ### Key Parameters
