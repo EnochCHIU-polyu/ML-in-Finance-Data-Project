@@ -1,0 +1,123 @@
+[2026-04-02 18:20:54] === Full-universe one-shot news ingestion started ===
+[2026-04-02 18:20:54] Universe size: 505 symbols
+[2026-04-02 18:20:54] Price coverage: 2013-02-08 -> 2018-02-07
+[2026-04-02 18:20:54] News coverage target: 2013-01-09 -> 2018-02-07
+[2026-04-02 18:20:54] NEWS_BUFFER_DAYS=30
+[2026-04-02 18:20:54] USE_NEWSAPI=True, API key provided=False, effective NewsAPI fetch=False
+[2026-04-02 18:20:54] USE_GOOGLE_RSS=True, USE_YFINANCE=True
+[2026-04-02 18:20:54] Output CSV: \\compdrive\Student5\25012923g\COMProfile\Documents\GitHub\ML-in-Finance-Data-Project\project_folder\news_data\data\news_headlines_raw.csv
+[2026-04-02 18:21:17] Progress 20/505 | current=AGN | got=48 (yf=0, rss=48, newsapi=0) | total_rows=1,903 | ETA=2026-04-02 18:30:24
+[2026-04-02 18:21:40] Progress 40/505 | current=ANDV | got=31 (yf=0, rss=31, newsapi=0) | total_rows=3,727 | ETA=2026-04-02 18:30:23
+[2026-04-02 18:22:01] Progress 60/505 | current=BA | got=100 (yf=0, rss=100, newsapi=0) | total_rows=5,583 | ETA=2026-04-02 18:30:12
+[2026-04-02 18:22:22] Progress 80/505 | current=CA | got=73 (yf=0, rss=73, newsapi=0) | total_rows=7,449 | ETA=2026-04-02 18:30:09
+[2026-04-02 18:22:44] Progress 100/505 | current=CINF | got=100 (yf=0, rss=100, newsapi=0) | total_rows=9,265 | ETA=2026-04-02 18:30:06
+[2026-04-02 18:23:06] Progress 120/505 | current=CSCO | got=100 (yf=0, rss=100, newsapi=0) | total_rows=11,230 | ETA=2026-04-02 18:30:07
+[2026-04-02 18:23:26] Progress 140/505 | current=DISCK | got=25 (yf=0, rss=25, newsapi=0) | total_rows=12,935 | ETA=2026-04-02 18:30:00
+[2026-04-02 18:23:47] Progress 160/505 | current=EL | got=100 (yf=0, rss=100, newsapi=0) | total_rows=14,771 | ETA=2026-04-02 18:29:59
+[2026-04-02 18:24:08] Progress 180/505 | current=FAST | got=100 (yf=0, rss=100, newsapi=0) | total_rows=16,545 | ETA=2026-04-02 18:29:57
+[2026-04-02 18:24:29] Progress 200/505 | current=GD | got=100 (yf=0, rss=100, newsapi=0) | total_rows=18,383 | ETA=2026-04-02 18:29:56
+[2026-04-02 18:24:51] Progress 220/505 | current=HCA | got=100 (yf=0, rss=100, newsapi=0) | total_rows=20,338 | ETA=2026-04-02 18:29:57
+[2026-04-02 18:25:13] Progress 240/505 | current=HUM | got=100 (yf=0, rss=100, newsapi=0) | total_rows=22,189 | ETA=2026-04-02 18:29:58
+[2026-04-02 18:25:34] Progress 260/505 | current=JCI | got=100 (yf=0, rss=100, newsapi=0) | total_rows=24,139 | ETA=2026-04-02 18:29:57
+[2026-04-02 18:25:55] Progress 280/505 | current=LB | got=100 (yf=0, rss=100, newsapi=0) | total_rows=25,828 | ETA=2026-04-02 18:29:56
+[2026-04-02 18:26:16] Progress 300/505 | current=MAS | got=100 (yf=0, rss=100, newsapi=0) | total_rows=27,767 | ETA=2026-04-02 18:29:55
+[2026-04-02 18:26:38] Progress 320/505 | current=MRK | got=100 (yf=0, rss=100, newsapi=0) | total_rows=29,700 | ETA=2026-04-02 18:29:56
+[2026-04-02 18:26:59] Progress 340/505 | current=NOC | got=100 (yf=0, rss=100, newsapi=0) | total_rows=31,534 | ETA=2026-04-02 18:29:56
+[2026-04-02 18:27:21] Progress 360/505 | current=PCG | got=100 (yf=0, rss=100, newsapi=0) | total_rows=33,446 | ETA=2026-04-02 18:29:56
+[2026-04-02 18:27:42] Progress 380/505 | current=PRGO | got=100 (yf=0, rss=100, newsapi=0) | total_rows=35,242 | ETA=2026-04-02 18:29:56
+[2026-04-02 18:28:02] Progress 400/505 | current=RMD | got=100 (yf=0, rss=100, newsapi=0) | total_rows=37,134 | ETA=2026-04-02 18:29:54
+[2026-04-02 18:28:24] Progress 420/505 | current=SO | got=100 (yf=0, rss=100, newsapi=0) | total_rows=38,988 | ETA=2026-04-02 18:29:54
+[2026-04-02 18:28:45] Progress 440/505 | current=TIF | got=63 (yf=0, rss=63, newsapi=0) | total_rows=40,804 | ETA=2026-04-02 18:29:54
+[2026-04-02 18:29:05] Progress 460/505 | current=UNH | got=100 (yf=0, rss=100, newsapi=0) | total_rows=42,728 | ETA=2026-04-02 18:29:52
+[2026-04-02 18:29:26] Progress 480/505 | current=WBA | got=100 (yf=0, rss=100, newsapi=0) | total_rows=44,574 | ETA=2026-04-02 18:29:52
+[2026-04-02 18:29:45] Progress 500/505 | current=XRX | got=100 (yf=0, rss=100, newsapi=0) | total_rows=46,241 | ETA=2026-04-02 18:29:50
+[2026-04-02 18:29:51] Progress 505/505 | current=ZTS | got=100 (yf=0, rss=100, newsapi=0) | total_rows=46,741 | ETA=2026-04-02 18:29:51
+[2026-04-02 18:29:51] [OK] Saved shared raw news to: \\compdrive\Student5\25012923g\COMProfile\Documents\GitHub\ML-in-Finance-Data-Project\project_folder\news_data\data\news_headlines_raw.csv
+[2026-04-02 18:29:51] Rows: 544
+[2026-04-02 18:29:51] Coverage: 2013-01-21 -> 2018-02-07
+[2026-04-02 18:29:51] Source counts (top 10):
+[2026-04-02 18:29:51] === Full-universe one-shot news ingestion finished ===
+[2026-04-02 18:34:07] === Full-universe one-shot news ingestion started ===
+[2026-04-02 18:34:07] Universe size: 505 symbols
+[2026-04-02 18:34:07] Price coverage: 2013-02-08 -> 2018-02-07
+[2026-04-02 18:34:07] News coverage target: 2013-01-09 -> 2018-02-07
+[2026-04-02 18:34:07] NEWS_BUFFER_DAYS=30
+[2026-04-02 18:34:07] USE_NEWSAPI=True, API key provided=False, effective NewsAPI fetch=False
+[2026-04-02 18:34:07] USE_GOOGLE_RSS=True, USE_YFINANCE=True
+[2026-04-02 18:34:07] Output CSV: \\compdrive\Student5\25012923g\COMProfile\Documents\GitHub\ML-in-Finance-Data-Project\project_folder\news_data\data\news_headlines_raw.csv
+[2026-04-02 18:34:28] Progress 20/505 | current=AGN | got=48 (yf=0, rss=48, newsapi=0) | total_rows=1,903 | ETA=2026-04-02 18:42:48
+[2026-04-02 18:34:49] Progress 40/505 | current=ANDV | got=43 (yf=0, rss=43, newsapi=0) | total_rows=3,739 | ETA=2026-04-02 18:42:50
+[2026-04-02 18:35:10] Progress 60/505 | current=BA | got=100 (yf=0, rss=100, newsapi=0) | total_rows=5,598 | ETA=2026-04-02 18:42:54
+[2026-04-02 18:35:31] Progress 80/505 | current=CA | got=73 (yf=0, rss=73, newsapi=0) | total_rows=7,464 | ETA=2026-04-02 18:42:54
+[2026-04-02 18:35:51] Progress 100/505 | current=CINF | got=100 (yf=0, rss=100, newsapi=0) | total_rows=9,280 | ETA=2026-04-02 18:42:51
+[2026-04-02 18:36:13] Progress 120/505 | current=CSCO | got=100 (yf=0, rss=100, newsapi=0) | total_rows=11,245 | ETA=2026-04-02 18:42:55
+[2026-04-02 18:36:33] Progress 140/505 | current=DISCK | got=25 (yf=0, rss=25, newsapi=0) | total_rows=12,950 | ETA=2026-04-02 18:42:52
+[2026-04-02 18:36:54] Progress 160/505 | current=EL | got=100 (yf=0, rss=100, newsapi=0) | total_rows=14,792 | ETA=2026-04-02 18:42:53
+[2026-04-02 18:37:14] Progress 180/505 | current=FAST | got=100 (yf=0, rss=100, newsapi=0) | total_rows=16,566 | ETA=2026-04-02 18:42:51
+[2026-04-02 18:37:35] Progress 200/505 | current=GD | got=100 (yf=0, rss=100, newsapi=0) | total_rows=18,403 | ETA=2026-04-02 18:42:51
+[2026-04-02 18:37:57] Progress 220/505 | current=HCA | got=100 (yf=0, rss=100, newsapi=0) | total_rows=20,365 | ETA=2026-04-02 18:42:54
+[2026-04-02 18:38:18] Progress 240/505 | current=HUM | got=100 (yf=0, rss=100, newsapi=0) | total_rows=22,216 | ETA=2026-04-02 18:42:54
+[2026-04-02 18:38:39] Progress 260/505 | current=JCI | got=100 (yf=0, rss=100, newsapi=0) | total_rows=24,172 | ETA=2026-04-02 18:42:54
+[2026-04-02 18:38:59] Progress 280/505 | current=LB | got=100 (yf=0, rss=100, newsapi=0) | total_rows=25,861 | ETA=2026-04-02 18:42:53
+[2026-04-02 18:39:19] Progress 300/505 | current=MAS | got=100 (yf=0, rss=100, newsapi=0) | total_rows=27,800 | ETA=2026-04-02 18:42:52
+[2026-04-02 18:39:40] Progress 320/505 | current=MRK | got=100 (yf=0, rss=100, newsapi=0) | total_rows=29,727 | ETA=2026-04-02 18:42:52
+[2026-04-02 18:40:01] Progress 340/505 | current=NOC | got=100 (yf=0, rss=100, newsapi=0) | total_rows=31,557 | ETA=2026-04-02 18:42:52
+[2026-04-02 18:40:22] Progress 360/505 | current=PCG | got=100 (yf=0, rss=100, newsapi=0) | total_rows=33,469 | ETA=2026-04-02 18:42:52
+[2026-04-02 18:40:42] Progress 380/505 | current=PRGO | got=100 (yf=0, rss=100, newsapi=0) | total_rows=35,264 | ETA=2026-04-02 18:42:51
+[2026-04-02 18:41:02] Progress 400/505 | current=RMD | got=100 (yf=0, rss=100, newsapi=0) | total_rows=37,155 | ETA=2026-04-02 18:42:50
+[2026-04-02 18:41:23] Progress 420/505 | current=SO | got=100 (yf=0, rss=100, newsapi=0) | total_rows=39,010 | ETA=2026-04-02 18:42:51
+[2026-04-02 18:41:43] Progress 440/505 | current=TIF | got=63 (yf=0, rss=63, newsapi=0) | total_rows=40,826 | ETA=2026-04-02 18:42:50
+[2026-04-02 18:42:03] Progress 460/505 | current=UNH | got=100 (yf=0, rss=100, newsapi=0) | total_rows=42,732 | ETA=2026-04-02 18:42:49
+[2026-04-02 18:42:24] Progress 480/505 | current=WBA | got=100 (yf=0, rss=100, newsapi=0) | total_rows=44,578 | ETA=2026-04-02 18:42:49
+[2026-04-02 18:42:44] Progress 500/505 | current=XRX | got=100 (yf=0, rss=100, newsapi=0) | total_rows=46,260 | ETA=2026-04-02 18:42:49
+[2026-04-02 18:42:49] Progress 505/505 | current=ZTS | got=100 (yf=0, rss=100, newsapi=0) | total_rows=46,760 | ETA=2026-04-02 18:42:49
+[2026-04-02 18:42:51] [OK] Saved shared raw news to: \\compdrive\Student5\25012923g\COMProfile\Documents\GitHub\ML-in-Finance-Data-Project\project_folder\news_data\data\news_headlines_raw.csv
+[2026-04-02 18:42:51] Fetched raw rows before cleaning: 46,760
+[2026-04-02 18:42:51] Rows after required-field cleaning: 46,760
+[2026-04-02 18:42:51] Rows: 46,760
+[2026-04-02 18:42:51] Coverage: 1979-03-31 -> 2026-04-02
+[2026-04-02 18:42:51] Source counts (top 10):
+[2026-04-02 18:42:51] === Full-universe one-shot news ingestion finished ===
+[2026-04-02 18:48:23] === Full-universe one-shot news ingestion started ===
+[2026-04-02 18:48:23] Universe size: 505 symbols
+[2026-04-02 18:48:23] Price coverage: 2013-02-08 -> 2018-02-07
+[2026-04-02 18:48:23] News coverage target: 2013-01-09 -> 2018-02-07
+[2026-04-02 18:48:23] NEWS_BUFFER_DAYS=30
+[2026-04-02 18:48:23] USE_NEWSAPI=True, API key provided=False, effective NewsAPI fetch=False
+[2026-04-02 18:48:23] USE_GOOGLE_RSS=True, USE_YFINANCE=True
+[2026-04-02 18:48:23] Output CSV: \\compdrive\Student5\25012923g\COMProfile\Documents\GitHub\ML-in-Finance-Data-Project\project_folder\news_data\data\news_headlines_raw.csv
+[2026-04-02 18:48:41] Progress 20/505 | current=AGN | got=31 (yf=0, rss=31, newsapi=0) | total_rows=773 | ETA=2026-04-02 18:56:02
+[2026-04-02 18:49:00] Progress 40/505 | current=ANDV | got=3 (yf=0, rss=3, newsapi=0) | total_rows=1,417 | ETA=2026-04-02 18:56:07
+[2026-04-02 18:49:17] Progress 60/505 | current=BA | got=37 (yf=0, rss=37, newsapi=0) | total_rows=1,805 | ETA=2026-04-02 18:55:55
+[2026-04-02 18:49:46] Progress 80/505 | current=CA | got=43 (yf=0, rss=43, newsapi=0) | total_rows=2,422 | ETA=2026-04-02 18:57:06
+[2026-04-02 18:50:03] Progress 100/505 | current=CINF | got=1 (yf=0, rss=1, newsapi=0) | total_rows=2,969 | ETA=2026-04-02 18:56:49
+[2026-04-02 18:50:22] Progress 120/505 | current=CSCO | got=42 (yf=0, rss=42, newsapi=0) | total_rows=3,713 | ETA=2026-04-02 18:56:44
+[2026-04-02 18:50:40] Progress 140/505 | current=DISCK | got=4 (yf=0, rss=4, newsapi=0) | total_rows=4,248 | ETA=2026-04-02 18:56:36
+[2026-04-02 18:50:58] Progress 160/505 | current=EL | got=41 (yf=0, rss=41, newsapi=0) | total_rows=4,855 | ETA=2026-04-02 18:56:33
+[2026-04-02 18:51:16] Progress 180/505 | current=FAST | got=50 (yf=0, rss=50, newsapi=0) | total_rows=5,262 | ETA=2026-04-02 18:56:27
+[2026-04-02 18:51:34] Progress 200/505 | current=GD | got=45 (yf=0, rss=45, newsapi=0) | total_rows=5,838 | ETA=2026-04-02 18:56:25
+[2026-04-02 18:51:52] Progress 220/505 | current=HCA | got=40 (yf=0, rss=40, newsapi=0) | total_rows=6,639 | ETA=2026-04-02 18:56:22
+[2026-04-02 18:52:10] Progress 240/505 | current=HUM | got=40 (yf=0, rss=40, newsapi=0) | total_rows=7,298 | ETA=2026-04-02 18:56:21
+[2026-04-02 18:52:28] Progress 260/505 | current=JCI | got=45 (yf=0, rss=45, newsapi=0) | total_rows=7,844 | ETA=2026-04-02 18:56:19
+[2026-04-02 18:52:46] Progress 280/505 | current=LB | got=49 (yf=0, rss=49, newsapi=0) | total_rows=8,495 | ETA=2026-04-02 18:56:17
+[2026-04-02 18:53:06] Progress 300/505 | current=MAS | got=31 (yf=0, rss=31, newsapi=0) | total_rows=9,233 | ETA=2026-04-02 18:56:19
+[2026-04-02 18:53:24] Progress 320/505 | current=MRK | got=46 (yf=0, rss=46, newsapi=0) | total_rows=9,870 | ETA=2026-04-02 18:56:18
+[2026-04-02 18:53:43] Progress 340/505 | current=NOC | got=46 (yf=0, rss=46, newsapi=0) | total_rows=10,493 | ETA=2026-04-02 18:56:18
+[2026-04-02 18:54:01] Progress 360/505 | current=PCG | got=14 (yf=0, rss=14, newsapi=0) | total_rows=11,001 | ETA=2026-04-02 18:56:17
+[2026-04-02 18:54:19] Progress 380/505 | current=PRGO | got=8 (yf=0, rss=8, newsapi=0) | total_rows=11,492 | ETA=2026-04-02 18:56:16
+[2026-04-02 18:54:38] Progress 400/505 | current=RMD | got=9 (yf=0, rss=9, newsapi=0) | total_rows=12,139 | ETA=2026-04-02 18:56:16
+[2026-04-02 18:54:57] Progress 420/505 | current=SO | got=51 (yf=0, rss=51, newsapi=0) | total_rows=12,651 | ETA=2026-04-02 18:56:16
+[2026-04-02 18:55:15] Progress 440/505 | current=TIF | got=17 (yf=0, rss=17, newsapi=0) | total_rows=13,155 | ETA=2026-04-02 18:56:15
+[2026-04-02 18:55:33] Progress 460/505 | current=UNH | got=23 (yf=0, rss=23, newsapi=0) | total_rows=13,678 | ETA=2026-04-02 18:56:15
+[2026-04-02 18:55:52] Progress 480/505 | current=WBA | got=31 (yf=0, rss=31, newsapi=0) | total_rows=14,260 | ETA=2026-04-02 18:56:15
+[2026-04-02 18:56:11] Progress 500/505 | current=XRX | got=36 (yf=0, rss=36, newsapi=0) | total_rows=14,791 | ETA=2026-04-02 18:56:15
+[2026-04-02 18:56:15] Progress 505/505 | current=ZTS | got=17 (yf=0, rss=17, newsapi=0) | total_rows=14,920 | ETA=2026-04-02 18:56:15
+[2026-04-02 18:56:16] [OK] Saved shared raw news to: \\compdrive\Student5\25012923g\COMProfile\Documents\GitHub\ML-in-Finance-Data-Project\project_folder\news_data\data\news_headlines_raw.csv
+[2026-04-02 18:56:16] [OK] Saved full unfiltered raw news to: \\compdrive\Student5\25012923g\COMProfile\Documents\GitHub\ML-in-Finance-Data-Project\project_folder\news_data\data\news_headlines_raw_full_unfiltered.csv
+[2026-04-02 18:56:16] Fetched raw rows before cleaning: 14,920
+[2026-04-02 18:56:16] Rows after required-field cleaning (full): 14,920
+[2026-04-02 18:56:16] Rows (windowed): 14,888
+[2026-04-02 18:56:16] Rows (exported 4-column): 14,888
+[2026-04-02 18:56:16] Coverage: 2013-01-09 -> 2018-02-07
+[2026-04-02 18:56:16] Source counts (top 10):
+[2026-04-02 18:56:16] === Full-universe one-shot news ingestion finished ===
