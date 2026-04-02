@@ -1,5 +1,6 @@
 ﻿# Commit Improvement Logs (Newest First)
 
+- [506e578](log_20260402_1925_506e578.md): Add news clustering 2D > 2C
 - [31fc107](log_20260402_1613_31fc107.md): using Auto-Tuned Lag+Decay for news weight
 - [80f1d93](log_20260402_1532_80f1d93.md): update result
 - [0af2464](log_20260402_1531_0af2464.md): add log, fix 02C with silde window 10 date new
