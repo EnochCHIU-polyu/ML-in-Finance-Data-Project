@@ -1,0 +1,25 @@
+Section,Item,Value
+Auto-Tuned Lag+Decay,Best lookback_days,10
+Auto-Tuned Lag+Decay,Best decay_rate,0.2
+Auto-Tuned Lag+Decay,Grid-search MAE,4.838274583662289
+Auto-Tuned Lag+Decay,Used by all news-based models,"yes (lookback_days=10, decay_rate=0.20)"
+02C Overall,Sentiment-Enhanced (MAE),4.838274583662289
+02C Overall,Baseline (MAE),4.968021705471109
+02C Overall,Sentiment-Enhanced (RMSE),9.297370925657438
+02C Overall,Baseline (RMSE),9.517169464060006
+02C Overall,Sentiment-Enhanced (MAPE(%)),1.0694194126297816
+02C Overall,Baseline (MAPE(%)),1.0808198697660667
+02C Overall,Sentiment-Enhanced (R2),0.9995413576391783
+02C Overall,Baseline (R2),0.9995194158386576
+02C Cluster-Specific,Global Sentiment (MAE),4.838274583662289
+02C Cluster-Specific,Cluster-Specific (MAE),5.106616760281754
+02C Cluster-Specific,Blended (MAE),4.838274417891852
+02C Cluster-Specific,Global Sentiment (RMSE),9.297370925657438
+02C Cluster-Specific,Cluster-Specific (RMSE),9.440609968480935
+02C Cluster-Specific,Blended (RMSE),9.297371158535189
+02C Cluster-Specific,Global Sentiment (MAPE(%)),1.0694194126297816
+02C Cluster-Specific,Cluster-Specific (MAPE(%)),1.2674363969976357
+02C Cluster-Specific,Blended (MAPE(%)),1.0694192425465008
+02C Cluster-Specific,Global Sentiment (R2),0.9995413576391783
+02C Cluster-Specific,Cluster-Specific (R2),0.9995271167190497
+02C Cluster-Specific,Blended (R2),0.9995413576162024
