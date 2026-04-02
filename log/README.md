@@ -1,0 +1,24 @@
+﻿# Commit Improvement Logs (Newest First)
+
+- [160557f](log_20260329_2129_160557f.md): add finbert for sentiment-enhanced prediction
+- [621eceb](log_20260329_2120_621eceb.md): better version for cluster and regression
+- [b2cc73e](log_20260329_2107_b2cc73e.md): Combiting cluster and regression
+- [035e61d](log_20260329_2047_035e61d.md): v2: restructure the clustering
+- [bcd287e](log_20260329_1933_bcd287e.md): add TabNet
+- [5dd429f](log_20260329_1853_5dd429f.md): Optuna Hyperparameter Tuning
+- [9470c75](log_20260329_1823_9470c75.md): Revert "Merge pull request #1 from EnochCHIU-polyu/better_lstm_model"
+- [cc7aca8](log_20260329_1821_cc7aca8.md): Merge pull request #1 from EnochCHIU-polyu/better_lstm_model
+- [e94e0ea](log_20260329_1820_e94e0ea.md): 4 model (BASIC / DEEP / BILSTM+ATTN / CNN-LSTM)
+- [e44119e](log_20260329_1759_e44119e.md): build_improved_lstm_model
+- [dc21d64](log_20260329_1755_dc21d64.md): update result
+- [8d15c6c](log_20260329_1751_8d15c6c.md): setup a better lstm, however worest result
+- [de792ee](log_20260328_1927_de792ee.md): Adding LSTM
+- [de4f7e7](log_20260328_1826_de4f7e7.md): Output summaries
+- [c5c28b4](log_20260328_1825_c5c28b4.md): Refactor code structure forsummary showing
+- [4894fad](log_20260328_1820_4894fad.md): Update anomaly detection data and visualizations; replace TSLA with NVDA in top stocks list
+- [a298a0d](log_20260328_1741_a298a0d.md): Add detailed README files for stock trend classification, price regression, clustering analysis, and anomaly detection
+- [e537a15](log_20260328_1738_e537a15.md): Update: little changing within result
+- [714616f](log_20260328_1737_714616f.md): v1.1: More detail
+- [69ee8f2](log_20260328_1721_69ee8f2.md): Restructure the folder and fill the 03, 04
+- [5eff3f3](log_20260328_1703_5eff3f3.md): Move README to repository root
+- [7843cc1](log_20260328_1653_7843cc1.md): Initial commit: ML finance notebooks and docs
