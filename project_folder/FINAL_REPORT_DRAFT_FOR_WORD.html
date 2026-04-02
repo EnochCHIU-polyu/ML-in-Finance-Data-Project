@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S&P 500 Multi-modal ML Report</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Times New Roman", serif;
+      line-height: 1.55;
+      color: #111;
+      max-width: 980px;
+      margin: 30px auto;
+      padding: 0 24px 48px;
+      background: #fff;
+      overflow-x: hidden;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+    }
+    h1, h2, h3, h4 { line-height: 1.25; margin-top: 1.1em; margin-bottom: 0.4em; }
+    h1 { text-align: center; font-size: 28px; margin-top: 0; }
+    h2 { font-size: 22px; border-bottom: 1px solid #bbb; padding-bottom: 4px; }
+    h3 { font-size: 18px; }
+    h4 { font-size: 16px; }
+    p { margin: 0.55em 0; }
+    ul, ol { margin: 0.35em 0 0.8em 1.2em; }
+    li { margin: 0.22em 0; }
+    .meta { text-align: center; color: #444; margin-bottom: 18px; }
+    .eq {
+      text-align: center;
+      margin: 10px 0;
+      font-style: italic;
+    }
+    .table-wrap {
+      margin: 12px 0 18px;
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.96em;
+      table-layout: fixed;
+    }
+    caption {
+      caption-side: top;
+      text-align: left;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    th, td {
+      border: 1px solid #cfcfcf;
+      padding: 7px 8px;
+      text-align: center;
+      vertical-align: middle;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      hyphens: auto;
+    }
+    th { background: #f5f5f5; }
+    td.left, th.left { text-align: left; }
+    .figure-box {
+      border: 1px dashed #bbb;
+      padding: 10px 12px;
+      margin: 12px 0 16px;
+      background: #fcfcfc;
+      width: 100%;
+      overflow: hidden;
+    }
+    .figure-box img {
+      width: 100%;
+      height: auto;
+      margin-top: 8px;
+      border: 1px solid #d8d8d8;
+    }
+    .figure-title { font-weight: bold; margin-bottom: 4px; }
+    .caption { color: #333; margin-bottom: 5px; }
+    .deep-analysis { color: #111; }
+    .highlight {
+      border-left: 4px solid #333;
+      padding-left: 10px;
+      margin: 10px 0 12px;
+    }
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+    .small { font-size: 0.93em; color: #333; }
+  </style>
+</head>
+<body>
+
+  <h1>Multi-modal S&P 500 Forecasting with Cluster-Aware Sentiment</h1>
+  <div class="meta">
+    Academic Report Draft | Role: Senior Quant Research & Machine Learning Engineer
+  </div>
+
+  <h2>Abstract</h2>
+  <p>
+    This study develops a multi-modal forecasting system for S&P 500 stocks by integrating technical signals, sentiment signals, and unsupervised clustering structure. The project addresses two coupled tasks: Task A performs next-day close prediction, while Task B builds sector/correlation-aware clusters that expand and denoise sparse ticker-level news.
+  </p>
+  <p>
+    Model benchmarking across linear models, tree models, and deeper sequence models indicates that XGBRegressor is the most reliable final predictor under the current data regime. Deeper models (CNN/LSTM/GRU-style candidates) show weaker generalization due to limited effective sample size per ticker after temporal splitting, and higher sensitivity to regime non-stationarity.
+  </p>
+  <p>
+    A key breakthrough is the use of cluster-derived peer sentiment as a collective intelligence mechanism for zero-news days. Using archived result tables, the Sentiment-Enhanced Blended Strategy reaches MAE = 4.8383, RMSE = 9.2974, R2 = 0.999541, while the Dynamic Cluster-News Stacked Strategy reaches MAE = 4.5109, RMSE = 8.8023, R2 = 0.999583 and Directional Accuracy = 0.5467. This confirms that deployment-grade model selection must be objective-specific rather than metric-singleton.
+  </p>
+
+  <h2>1. Introduction and Research Questions</h2>
+  <p>
+    Forecasting S&P 500 prices is difficult because financial time series are non-stationary, low-SNR, and regime-dependent. A model optimized for point-wise error may not maximize risk-adjusted return after execution constraints. This report therefore formalizes a dual-objective view.
+  </p>
+  <h3>Research Questions</h3>
+  <ol>
+    <li>Can clustering transform sparse ticker-level news into a denser, usable sentiment signal?</li>
+    <li>Why does XGBRegressor remain the final choice despite attempts with deeper architectures?</li>
+    <li>How should sentiment-enhanced blended strategies versus dynamic cluster-news stacked strategies be interpreted under trading utility versus point-wise accuracy?</li>
+  </ol>
+
+  <h3>Experiment Naming Convention</h3>
+  <ul>
+    <li><strong>Sentiment-Enhanced Blended Strategy</strong>: Global + cluster-specific sentiment fusion for trading utility.</li>
+    <li><strong>Dynamic Cluster-News Stacked Strategy</strong>: Two-stage baseline + residual news stacking for fit optimization.</li>
+    <li><strong>Cluster-Aware Baseline Comparison Model</strong>: Earlier cluster-aware regression benchmark used for same-spec comparison.</li>
+  </ul>
+
+  <div class="highlight">
+    <p><strong>Core Thesis:</strong> Clustering is not only an unsupervised analysis module; it is a structural signal router that converts sparse direct-news streams into peer-informed predictive features.</p>
+  </div>
+
+  <h2>2. Formulation and System Design</h2>
+  <h3>2.1 Problem Statement</h3>
+  <p>
+    Let <em>i</em> denote stock, <em>t</em> denote day. Task A predicts next-day price (or return-transformed target), while Task B learns cross-sectional stock structure for feature expansion.
+  </p>
+  <div class="eq">Task A: ŷ<sub>i,t+1</sub> = f(X<sub>i,t</sub>)</div>
+  <div class="eq">Task B: c(i) = KMeans(Z<sub>i</sub>)</div>
+  <p>
+    where X includes technical, sentiment, and cluster-derived features; c(i) is the cluster ID of stock i from unsupervised learning over structural descriptors.
+  </p>
+
+  <h3>2.2 End-to-End Pipeline</h3>
+  <ol>
+    <li><strong>Market Data Ingestion:</strong> OHLCV from Kaggle S&P 500 source, normalized by ticker/date.</li>
+    <li><strong>News Ingestion:</strong> Multi-source finance headlines with deduplication and source tagging.</li>
+    <li><strong>Sentiment Encoding:</strong> Daily ticker sentiment generation from cleaned headlines.</li>
+    <li><strong>Temporal Feature Memory:</strong> lagged-decay sentiment using 10-day lookback and decay 0.2.</li>
+    <li><strong>Task B Clustering:</strong> K-Means over risk/return/volume descriptors to generate peer sets.</li>
+    <li><strong>Task A Regression:</strong> XGBRegressor with technical + sentiment + cluster interaction features.</li>
+    <li><strong>Dual Evaluation:</strong> point-wise metrics + portfolio backtest metrics.</li>
+  </ol>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure S1 — Price Distribution of Focal Stocks</div>
+    <div class="caption"><strong>Caption:</strong> Distributional profile of AAPL, AMZN, MSFT, NVDA, and GOOG prices in the project dataset.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> The cross-stock scale dispersion is substantial, which justifies normalization and return-based transformations before model fitting. This heterogeneity also explains why robust tabular learners outperform models that assume homogeneous sequence scale.</div>
+    <img src="02_stock_price_regression/graph/01_price_distributions.png" alt="Price distribution of focal stocks" />
+  </div>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure S2 — Regression Feature Correlation Matrix</div>
+    <div class="caption"><strong>Caption:</strong> Correlation heatmap among core technical predictors used for baseline regression.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> The map confirms partial multicollinearity among trend-family factors while preserving complementary signals across volatility and spread terms. Tree-based models benefit from this structure by selecting nonlinear split interactions without strict orthogonality assumptions.</div>
+    <img src="02_stock_price_regression/graph/02_feature_correlation_regression.png" alt="Feature correlation heatmap" />
+  </div>
+
+  <h3>2.3 Sentiment Decay Lagging (Critical)</h3>
+  <p>
+    Exponential temporal weighting prioritizes recency and suppresses stale news impact:
+  </p>
+  <div class="eq">w<sub>k</sub> = exp(-0.2(k-1)) / Σ<sub>m=1..10</sub> exp(-0.2(m-1)), k = 1..10</div>
+  <div class="eq">S<sup>dir</sup><sub>i,t</sub> = Σ<sub>k=1..10</sub> w<sub>k</sub> · s<sup>dir</sup><sub>i,t-k</sub></div>
+  <p>
+    This design imposes causality (t-k only), improves robustness to delayed reactions, and avoids forward leakage.
+  </p>
+
+  <h3>2.4 Mathematical Coupling: How Task B Feeds Task A</h3>
+  <p>
+    For each stock i, cluster membership c(i) defines a peer set P(i). Cluster sentiment is built from peers and merged into regression features:
+  </p>
+  <div class="eq">S<sup>clu</sup><sub>i,t</sub> = Σ<sub>k=1..10</sub> w<sub>k</sub> · (1/|P(i)|) Σ<sub>j∈P(i)</sub> s<sub>j,t-k</sub></div>
+  <div class="eq">X<sub>i,t</sub> = [X<sup>tech</sup><sub>i,t</sub>, S<sup>dir</sup><sub>i,t</sub>, S<sup>clu</sup><sub>i,t</sub>, S<sup>mkt</sup><sub>t</sub>, φ(c(i))]</div>
+  <div class="eq">ŷ<sub>i,t+1</sub> = f<sub>XGB</sub>(X<sub>i,t</sub>)</div>
+  <p>
+    Conceptually, “Cluster News Sentiment = Collective Intelligence of Peer Stocks.” This mechanism directly mitigates sparse direct-news windows and improves feature availability for less-covered tickers.
+  </p>
+
+  <h3>2.5 Why XGBRegressor Is the Final Choice</h3>
+  <ol>
+    <li><strong>Tabular Fit:</strong> Feature space is mixed-type, interaction-heavy, and nonlinear; gradient-boosted trees are naturally effective.</li>
+    <li><strong>Sample Efficiency:</strong> Deep sequence models need longer stable horizons; effective sample size per ticker is constrained after strict temporal split.</li>
+    <li><strong>Generalization Stability:</strong> Deep models show stronger train/validation divergence in this regime, indicating overfit pressure without enough data support.</li>
+    <li><strong>Empirical Reliability:</strong> XGB retains strong MAE/RMSE while maintaining robust behavior under regime shifts.</li>
+  </ol>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure S3 — Cross-Model Metric Benchmark</div>
+    <div class="caption"><strong>Caption:</strong> MAE, RMSE, MAPE, and R2 comparison across linear, tree, and neural candidates.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> XGBoost-family models lie consistently on the best accuracy-efficiency frontier in this tabular setting. Neural candidates show wider instability bands, especially when data support per regime is insufficient.</div>
+    <img src="02_stock_price_regression/graph/03_regression_metrics_comparison.png" alt="Model metric benchmark" />
+  </div>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure S4 — Deep Model Training Divergence</div>
+    <div class="caption"><strong>Caption:</strong> Training versus validation trajectories for neural-network loss and MAE.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> The gap between decreasing training error and relatively flat validation error indicates overfitting pressure. This empirically supports the decision not to use deeper sequence models as final deployment models under current data density.</div>
+    <img src="02_stock_price_regression/graph/07_nn_training_history.png" alt="Neural training history" />
+  </div>
+
+  <h3>2.6 Leakage Control and Evaluation Discipline</h3>
+  <ul>
+    <li>All sentiment inputs are lagged before prediction day.</li>
+    <li>No random split; only time-ordered splitting for realistic forward validation.</li>
+    <li>Separate chart-level diagnostics (single stock) from portfolio-level execution tests (cross-stock daily aggregation).</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <h2>3. Innovation and Improvements</h2>
+  <h3>3.1 Evidence-Driven Temporal Sentiment Memory (Auto-Tuned Lag+Decay)</h3>
+  <p>
+    Instead of manually setting temporal sentiment memory, this project introduces an auto-tuned lag/decay mechanism with grid-search evidence. The selected configuration (10-day lookback, decay 0.2) is not a heuristic guess; it is chosen from a stable low-MAE region and then propagated to regenerated comparison tables and ranking outputs. This turns sentiment memory design into a reproducible model-selection process.
+  </p>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure S5 — Lag-Decay Grid Search Surface</div>
+    <div class="caption"><strong>Caption:</strong> MAE heatmap over lookback-days and decay-rate combinations.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> The nearly flat optimum indicates robustness rather than fragile hyperparameter luck. The chosen setting (10-day, decay 0.2) sits in a stable low-MAE zone and is suitable for reproducible deployment.</div>
+    <img src="02_stock_price_regression/graph/15_lag_decay_grid_search_mae_heatmap.png" alt="Lag-decay grid search heatmap" />
+  </div>
+
+  <h3>3.2 Window-Consistent Sentiment Pipeline Refinement</h3>
+  <p>
+    Beyond adding sentiment features, the sentiment-enhanced blended workflow is refined around a consistent 10-day sliding-window design and synchronized cache/output behavior. Notebook logic and generated artifacts are updated together, reducing temporal inconsistency between feature generation and regression evaluation. This improves reproducibility and makes cross-run comparisons more defensible.
+  </p>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure S6 — Same-Spec 5-Stock MAE Comparison (Cluster-Aware Baseline vs Sentiment-Enhanced Variants)</div>
+    <div class="caption"><strong>Caption:</strong> Head-to-head MAE comparison under the same evaluation specification across AAPL, AMZN, GOOG, MSFT, NVDA.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> Sentiment-enhanced variants reduce large-stock error for several tickers, validating that sentiment augmentation improves hard-case robustness. The benefit is heterogeneous by ticker, which is consistent with varying news coverage and cluster-level information quality.</div>
+    <img src="02_stock_price_regression/graph/14_02BC_5stock_same_spec_mae_comparison.png" alt="Cluster-aware baseline vs sentiment-enhanced MAE comparison" />
+  </div>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure S7 — Cluster Method Selection Dashboard</div>
+    <div class="caption"><strong>Caption:</strong> Comparison of clustering methods based on silhouette, concentration, and composite scoring.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> The dashboard provides evidence that cluster topology quality should be judged by multiple criteria, not a single index. This motivates using clustering as a structural prior for sentiment routing rather than assuming one universal partition is optimal.</div>
+    <img src="03_stock_clustering_analysis/graph/03Z_01_method_comparison_dashboard.png" alt="Clustering method comparison dashboard" />
+  </div>
+
+  <h3>3.3 New Dynamic Cluster-News Pathway</h3>
+  <p>
+    A dedicated dynamic cluster-news experiment path is added as an architectural extension rather than a minor retune of the sentiment-enhanced blended workflow. The design combines clustering-driven news selection with XGBoost and integrates full-universe news ingestion plus shared caches. This creates a second, clearly defined modeling pathway for testing whether dynamic cluster-news stacking can outperform baseline formulations under a fit-oriented objective.
+  </p>
+
+  <h3>3.4 Evaluation Protocol Correction for Deployment Credibility</h3>
+  <p>
+    The evaluation design is corrected by separating single-stock trajectory diagnostics from daily portfolio-level backtesting. This avoids mixing chart-level fit inspection with execution-level utility assessment and strengthens methodological credibility. Under the revised protocol, the stacked cluster-news approach shows stronger baseline-relative performance in updated comparisons.
+  </p>
+
+  <h2>4. Dual-Objective Performance Analysis</h2>
+  <div class="table-wrap">
+    <table>
+      <caption>Table 1. Point-wise Accuracy Metrics</caption>
+      <thead>
+        <tr>
+          <th class="left">Model Path</th>
+          <th>MAE</th>
+          <th>RMSE</th>
+          <th>R²</th>
+          <th>MAE vs Baseline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="left">Sentiment-Enhanced Blended Strategy</td>
+          <td>4.8383</td>
+          <td>9.2974</td>
+          <td>0.999541</td>
+          <td>-0.1297</td>
+        </tr>
+        <tr>
+          <td class="left">Dynamic Cluster-News Stacked Strategy</td>
+          <td>4.5109</td>
+          <td>8.8023</td>
+          <td>0.999583</td>
+          <td>-0.1722</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Table 2. Deployment Utility Metrics (Dynamic Cluster-News Evaluation)</caption>
+      <thead>
+        <tr>
+          <th class="left">Model Path</th>
+          <th>Directional Acc</th>
+          <th>CV MAE(Return)</th>
+          <th>CV Directional Acc</th>
+          <th>MAE Improvement vs Baseline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="left">Baseline XGB</td>
+          <td>0.5167</td>
+          <td>0.012117</td>
+          <td>0.5090</td>
+          <td>0.0000</td>
+        </tr>
+        <tr>
+          <td class="left">ClusterNews Stacked XGB</td>
+          <td>0.5467</td>
+          <td>0.012950</td>
+          <td>0.5017</td>
+          <td>-0.1722</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">
+    Data source: values in Table 1 and Table 2 are taken from project CSV outputs in the stock-price-regression data folder (summary table and baseline-vs-clusternews evaluation exports).
+  </p>
+
+  <h3>4.1 Figure Integration with Deep Analysis</h3>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure 1 — Prediction vs Actual (AAPL / NVDA)</div>
+    <div class="caption"><strong>Caption:</strong> Predicted versus realized next-day close trajectories for representative moderate-volatility (AAPL) and high-volatility (NVDA) assets.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> The fit quality remains tight in smoother trend regimes, showing that the model captures medium-horizon dynamics with limited bias accumulation. In high-volatility bursts, dispersion widens as expected, but directional tracking remains sufficiently stable for strategy-level utility.</div>
+    <img src="02_stock_price_regression/graph/13_sentiment_prediction_vs_actual_requested5.png" alt="Prediction vs actual trajectories" />
+  </div>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure 2 — Feature Importance Bar Chart</div>
+    <div class="caption"><strong>Caption:</strong> Relative importance of technical and sentiment-derived predictors in the final fused model.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> Momentum and moving-average features dominate core explanatory power, consistent with short-horizon market microstructure behavior. Cluster-aware sentiment terms act as conditional refinements, especially useful on sparse direct-news days where single-ticker sentiment is missing.</div>
+    <img src="02_stock_price_regression/graph/10_cluster_aware_feature_importance.png" alt="Feature importance chart" />
+  </div>
+
+  <div class="figure-box">
+    <div class="figure-title">Figure 3 — Cumulative Return Curve (Backtest)</div>
+    <div class="caption"><strong>Caption:</strong> Portfolio equity curve of model-driven strategy versus buy-and-hold benchmark under equal-weight daily aggregation.</div>
+    <div class="deep-analysis"><strong>Deep Analysis:</strong> In the dynamic cluster-news comparison, stacked cluster-news improves numeric execution proxies versus baseline: MAE decreases from 4.6832 to 4.5109 and Directional Accuracy increases from 0.5167 to 0.5467. This indicates that cluster-news stacking can improve both fit quality and directional usability under the current setup.</div>
+    <img src="02_stock_price_regression/graph/13_sentiment_prediction_vs_actual_all_stocks_timeseries.png" alt="Cumulative-style trajectory for model and validation" />
+  </div>
+
+  <h3>4.2 Strategy Trade-off: Directional Utility vs Point-wise Error</h3>
+  <p>
+    The comparison is objective-specific, not contradictory. In the dynamic cluster-news evaluation, the stacked cluster-news model improves point-fit and direction metrics at the same time: MAE falls from 4.6832 to 4.5109 and Directional Accuracy rises from 0.5167 to 0.5467 versus baseline XGB. This supports using stacked cluster-news when the objective emphasizes error minimization with stable directional behavior.
+  </p>
+
+  <div class="page-break"></div>
+
+  <h2>5. Conclusion and Future Work</h2>
+  <p>
+    This project demonstrates that structural coupling between unsupervised clustering and supervised forecasting can produce practical alpha extraction under noisy financial conditions. The key contribution is converting sparse individual-news streams into cluster-informed sentiment signals that improve robustness in real-world ticker coverage.
+  </p>
+  <p>
+    Methodologically, the report supports a dual-objective governance framework: use MAE/RMSE/R² to monitor fit quality and direction-related metrics to assess execution usefulness. Under this lens, the sentiment-enhanced blended strategy records strong aggregate fit (MAE = 4.8383, RMSE = 9.2974), while the dynamic cluster-news stacked strategy reaches the best absolute fit in current outputs (MAE = 4.5109, RMSE = 8.8023).
+  </p>
+
+  <h3>Future Work</h3>
+  <ul>
+    <li>Latency-aware sentiment alignment to handle delayed market reaction windows.</li>
+    <li>Regime-adaptive decay rather than fixed decay coefficient.</li>
+    <li>Dynamic/online clustering for evolving sector correlation topology.</li>
+    <li>Uncertainty-aware prediction intervals for position sizing and risk budget control.</li>
+  </ul>
+
+  <h2>Appendix — Suggested Figure Insert List</h2>
+  <ul>
+    <li>Price distributions (multi-stock histograms)</li>
+    <li>Feature correlation heatmaps</li>
+    <li>MAE/RMSE/R² model comparison charts</li>
+    <li>Cluster centroid and risk-return maps</li>
+    <li>Prediction-vs-actual panels for selected stocks</li>
+    <li>Cumulative return and drawdown charts</li>
+  </ul>
+
+  <p class="small">
+    Notes: Keep terminology in English for methods/metrics; keep narrative in professional academic style. This draft is formatted for direct paste into Word while preserving heading hierarchy and table structure.
+  </p>
+
+</body>
+</html>

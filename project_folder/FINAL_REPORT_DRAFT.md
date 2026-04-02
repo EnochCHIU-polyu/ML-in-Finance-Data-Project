@@ -14,6 +14,18 @@ This project addresses these issues by combining two layers of structure. First,
 
 The study is organized around a practical forecasting pipeline: data collection, preprocessing, feature engineering, clustering, regression, and trading evaluation. The final goal is not only to minimize prediction error but also to produce a model that can support a simple long/cash trading rule with better risk-adjusted performance than Buy & Hold.
 
+### 1.1 Project Build Flow from the Log History
+
+The final result in this project was not produced in a single step. Instead, it was built through a sequence of incremental experiments recorded in the `log/` folder. The development process began with baseline stock-price regression and clustering analysis, then moved to sentiment-enhanced regression, and finally converged on the 02D stacked news strategy.
+
+The first stage was to establish a stable baseline for price forecasting and stock clustering. This provided the technical indicator pipeline, the initial clustering structure, and the evaluation framework used throughout the project. The second stage introduced sentiment-enhanced regression, where news sentiment was added to the price model and the effect of lag/decay settings was tuned. This is where the project started to show that sentiment could improve the forecasting pipeline, but only when the features were carefully aligned with time-series constraints.
+
+The third stage was the major expansion step. A full-universe news ingestion pipeline was added so that the model could use a much richer headline cache instead of relying on a small subset of headlines. At the same time, the 02D notebook was created to combine return-correlation clustering, peer-news expansion, FinBERT sentiment scoring, and XGBoost regression in one unified workflow. This step is the main build point for the final model because it connects Task B (Clustering) directly to Task A (Regression).
+
+The fourth stage refined the 02D design into a stacked residual learning strategy. Instead of asking the news model to predict price from scratch, the model learned to correct the baseline residuals. This is a more realistic design for finance because price-only signals already explain part of the movement, while news acts as an incremental correction. Finally, the evaluation procedure was corrected so that single-stock price plots and daily portfolio backtests were separated, which made the reported Sharpe Ratio and Maximum Drawdown credible for trading analysis.
+
+In short, the reported result is the product of a build chain: baseline regression -> clustering analysis -> sentiment enhancement -> auto-tuned news weighting -> full-universe news ingestion -> dynamic cluster news expansion -> stacked residual modeling -> corrected financial evaluation. This chronology is important because it shows that the final performance was obtained through systematic model building rather than a single model choice.
+
 ## 2. Formulation & System Design
 
 ### 2.1 Problem Statement
