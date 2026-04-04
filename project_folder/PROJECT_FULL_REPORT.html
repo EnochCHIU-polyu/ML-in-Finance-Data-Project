@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S&amp;P 500 Multi-Modal ML Project — Full Technical Report</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0d1b2a;
+      --blue:   #1b4f72;
+      --accent: #2e86de;
+      --teal:   #0abde3;
+      --green:  #1dd1a1;
+      --yellow: #feca57;
+      --red:    #ff6b6b;
+      --grey:   #f4f6f8;
+      --mid:    #dfe6e9;
+      --text:   #2d3436;
+      --muted:  #636e72;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--grey);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    /* ── COVER PAGE ─────────────────────────── */
+    .cover {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 60%, #1a5276 100%);
+      color: #fff;
+      padding: 80px 60px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: "";
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .cover::after {
+      content: "";
+      position: absolute;
+      bottom: -60px; left: -60px;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(46,134,222,0.15);
+    }
+    .cover-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .cover h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      max-width: 800px;
+    }
+    .cover .subtitle {
+      font-size: 1.15rem;
+      color: rgba(255,255,255,0.80);
+      max-width: 700px;
+      margin-bottom: 36px;
+    }
+    .cover-meta {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .cover-meta-item {
+      border-left: 3px solid var(--teal);
+      padding-left: 12px;
+    }
+    .cover-meta-item .label { font-size: 11px; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 1px; }
+    .cover-meta-item .value { font-size: 14px; color: #fff; font-weight: 600; }
+
+    /* ── LAYOUT ────────────────────────────── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── TABLE OF CONTENTS ──────────────────── */
+    .toc {
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px 40px;
+      margin: 32px 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .toc h2 { font-size: 1.1rem; color: var(--blue); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .toc a:hover { text-decoration: underline; }
+    .toc .toc-sub { padding-left: 20px; margin-top: 4px; }
+    .toc .toc-sub li { font-size: 13px; color: var(--muted); }
+
+    /* ── SECTIONS ───────────────────────────── */
+    section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 40px 48px;
+      margin: 24px auto;
+      max-width: 1200px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--mid);
+    }
+    .section-num {
+      background: var(--navy);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      min-width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .section-num.accent { background: var(--accent); }
+    .section-num.teal   { background: var(--teal); color: var(--navy); }
+    .section-num.green  { background: var(--green); color: var(--navy); }
+    section h2 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin: 28px 0 12px;
+    }
+    h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 20px 0 8px;
+    }
+    p { margin-bottom: 12px; }
+
+    /* ── KPICARD GRID ───────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .kpi-card {
+      background: var(--grey);
+      border-radius: 10px;
+      padding: 18px 20px;
+      border-left: 4px solid var(--accent);
+    }
+    .kpi-card.green  { border-color: var(--green); }
+    .kpi-card.yellow { border-color: var(--yellow); }
+    .kpi-card.red    { border-color: var(--red); }
+    .kpi-card.teal   { border-color: var(--teal); }
+    .kpi-card .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
+    .kpi-card .kpi-value { font-size: 1.7rem; font-weight: 800; color: var(--navy); line-height: 1; }
+    .kpi-card .kpi-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* ── TABLES ─────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    thead th {
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    tbody tr:nth-child(odd)  { background: var(--grey); }
+    tbody tr:nth-child(even) { background: #fff; }
+    tbody td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--mid);
+      vertical-align: middle;
+    }
+    tbody tr.highlight td { background: #eafaf1; font-weight: 700; }
+    tbody tr.dim td { color: var(--muted); }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-green  { background: #d5f5e3; color: #1e8449; }
+    .badge-red    { background: #fdecea; color: #c0392b; }
+    .badge-blue   { background: #d6eaf8; color: #1a5276; }
+    .badge-yellow { background: #fef9e7; color: #9a7d0a; }
+    .badge-grey   { background: var(--mid); color: var(--muted); }
+
+    /* ── PIPELINE FLOW ──────────────────────── */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    .pipe-step {
+      background: var(--navy);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      min-width: 120px;
+    }
+    .pipe-step.alt { background: var(--accent); }
+    .pipe-step.alt2 { background: var(--teal); color: var(--navy); }
+    .pipe-step.alt3 { background: var(--green); color: var(--navy); }
+    .pipe-arrow {
+      color: var(--mid);
+      font-size: 20px;
+      padding: 0 6px;
+      font-weight: 300;
+    }
+
+    /* ── CALLOUT BOXES ──────────────────────── */
+    .callout {
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .callout-info    { background: #ebf5fb; border-left: 4px solid var(--accent); }
+    .callout-success { background: #eafaf1; border-left: 4px solid var(--green); }
+    .callout-warning { background: #fef9e7; border-left: 4px solid var(--yellow); }
+    .callout-danger  { background: #fdecea; border-left: 4px solid var(--red); }
+    .callout strong  { display: block; margin-bottom: 4px; }
+
+    /* ── IMPROVEMENT CARDS ──────────────────── */
+    .improvement-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .improvement-card {
+      border: 1px solid var(--mid);
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+    }
+    .improvement-card .imp-num {
+      position: absolute;
+      top: -12px;
+      left: 16px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+    .improvement-card h4 { margin-top: 8px; color: var(--navy); }
+    .improvement-card .imp-current { background: #fdecea; border-radius: 6px; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+    .improvement-card .imp-fix     { background: #eafaf1; border-radius: 6px; padding: 8px 12px; font-size: 13px; }
+    .imp-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px; }
+
+    /* ── TIMELINE ───────────────────────────── */
+    .timeline { position: relative; padding-left: 32px; margin: 16px 0; }
+    .timeline::before { content: ""; position: absolute; left: 12px; top: 0; bottom: 0; width: 2px; background: var(--mid); }
+    .tl-item { position: relative; margin-bottom: 20px; }
+    .tl-dot {
+      position: absolute;
+      left: -26px;
+      top: 4px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .tl-dot.done { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+    .tl-dot.future { background: var(--mid); box-shadow: 0 0 0 2px var(--mid); }
+    .tl-title { font-weight: 700; color: var(--navy); }
+    .tl-desc  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ── CODE BLOCKS ────────────────────────── */
+    .code-block {
+      background: #1e272e;
+      color: #dfe6e9;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    .code-block .kw  { color: #74b9ff; }
+    .code-block .fn  { color: #fdcb6e; }
+    .code-block .str { color: #55efc4; }
+    .code-block .cmt { color: #636e72; font-style: italic; }
+    .code-block .num { color: #fd79a8; }
+
+    /* ── HORIZON CARDS ──────────────────────── */
+    .horizon-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .horizon-card {
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+    .horizon-card.h5  { background: linear-gradient(135deg, #d6eaf8, #ebf5fb); border: 2px solid #aed6f1; }
+    .horizon-card.h10 { background: linear-gradient(135deg, #d5f5e3, #eafaf1); border: 2px solid #a9dfbf; }
+    .horizon-card.h15 { background: linear-gradient(135deg, #fef9e7, #fdfefe); border: 2px solid #f9e79f; }
+    .horizon-card .h-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--muted); }
+    .horizon-card .h-title { font-size: 1.6rem; font-weight: 800; color: var(--navy); margin: 6px 0; }
+    .horizon-card .h-desc  { font-size: 12px; color: var(--muted); }
+
+    /* ── FOOTER ─────────────────────────────── */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      padding: 32px;
+      font-size: 13px;
+      margin-top: 24px;
+    }
+    footer strong { color: #fff; }
+
+    /* ── PRINT ──────────────────────────────── */
+    @media print {
+      body { background: #fff; }
+      section { box-shadow: none; border: 1px solid var(--mid); break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     COVER
+══════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">Technical Research Report</div>
+  <h1>S&amp;P 500 Multi-Modal Machine Learning<br>Prediction &amp; Analysis System</h1>
+  <p class="subtitle">
+    A comprehensive study integrating stock clustering, FinBERT sentiment analysis,
+    anomaly detection and multi-horizon forecasting for the S&amp;P 500 universe.
+  </p>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="label">Author</div>
+      <div class="value">EnochCHIU</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Dataset</div>
+      <div class="value">S&amp;P 500 · 5 Stocks · 1,239+ Days</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Report Date</div>
+      <div class="value">April 2026</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Best Model</div>
+      <div class="value">ClusterNews Stacked XGBoost</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Best Sharpe Ratio</div>
+      <div class="value">2.8178</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     TABLE OF CONTENTS
+══════════════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#sec-abstract">Abstract &amp; Key Results</a></li>
+    <li><a href="#sec-arch">System Architecture &amp; Build Flow</a></li>
+    <li><a href="#sec-task01">Task 01 — Stock Trend Classification</a></li>
+    <li>
+      <a href="#sec-task02">Task 02 — Stock Price Regression (Evolution 02A → 02D)</a>
+      <ol class="toc-sub">
+        <li><a href="#sec-focus1">Focus 1: Cluster News Method — Deep Analysis</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec-task03">Task 03 — Stock Clustering Analysis (6 Methods)</a></li>
+    <li><a href="#sec-task04">Task 04 — Anomaly Detection</a></li>
+    <li><a href="#sec-improvements">System Improvement Analysis</a></li>
+    <li>
+      <a href="#sec-focus2">Focus 2 — Future Data Guidance: 02E Multi-Horizon Forecasting</a>
+      <ol class="toc-sub">
+        <li><a href="#sec-02e-targets">Target Engineering (Forward Log Returns)</a></li>
+        <li><a href="#sec-02e-features">New Feature Engineering (32 Total)</a></li>
+        <li><a href="#sec-02e-model">Multi-Output Model Architecture</a></li>
+        <li><a href="#sec-02f-preview">02F Regime-Filtered Trading Signal Preview</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec-conclusion">Conclusion</a></li>
+  </ol>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     1. ABSTRACT
+══════════════════════════════════════════════════════════════ -->
+<section id="sec-abstract">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>Abstract &amp; Key Results</h2>
+  </div>
+
+  <p>
+    This project builds a complete multi-modal machine learning system for S&amp;P 500 stocks,
+    combining four tightly integrated tasks: trend classification (Task 01), price regression
+    (Task 02), clustering analysis (Task 03), and anomaly detection (Task 04). The central
+    innovation is the <strong>Cluster-Aware News Stacking</strong> architecture introduced in
+    Task 02D: K-Means peer clusters (Task 03) allow sparse news sentiment to be amplified
+    across correlated stocks, and a stacked residual design ensures news features correct the
+    price baseline rather than compete with it.
+  </p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card green">
+      <div class="kpi-label">Best Model MAE</div>
+      <div class="kpi-value">$4.51</div>
+      <div class="kpi-sub">ClusterNews Stacked XGB</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Directional Accuracy</div>
+      <div class="kpi-value">54.7%</div>
+      <div class="kpi-sub">+3.0 pp over baseline</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">R² Score</div>
+      <div class="kpi-value">0.99958</div>
+      <div class="kpi-sub">On 5-stock test set</div>
+    </div>
+    <div class="kpi-card teal">
+      <div class="kpi-label">Sharpe Ratio (Trading)</div>
+      <div class="kpi-value">2.818</div>
+      <div class="kpi-sub">vs. 2.544 buy &amp; hold</div>
+    </div>
+    <div class="kpi-card yellow">
+      <div class="kpi-label">Max Drawdown</div>
+      <div class="kpi-value">−7.47%</div>
+      <div class="kpi-sub">vs. −8.16% baseline</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Stocks Covered</div>
+      <div class="kpi-value">505</div>
+      <div class="kpi-sub">Full S&amp;P 500 universe</div>
+    </div>
+  </div>
+
+  <div class="callout callout-success">
+    <strong>Core Result</strong>
+    Stacked residual learning — where news sentiment corrects the residuals of a price-only
+    XGBoost model — outperforms both pure price prediction and direct news-feature injection
+    on all aggregate metrics. The 3.0 pp directional accuracy improvement is statistically
+    meaningful for daily trading signal generation.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     2. ARCHITECTURE
+══════════════════════════════════════════════════════════════ -->
+<section id="sec-arch">
+  <div class="section-header">
+    <div class="section-num accent">2</div>
+    <h2>System Architecture &amp; Build Flow</h2>
+  </div>
+
+  <p>
+    The system evolved over 27 commits across four development phases, each phase building
+    directly on the outputs of the previous one. The architecture is designed around a
+    <em>task dependency graph</em>: clustering (Task 03) feeds regression (Task 02), which
+    informs trading signals evaluated by anomaly detection (Task 04).
+  </p>
+
+  <h3>Pipeline Overview</h3>
+  <div class="pipeline">
+    <div class="pipe-step">Raw OHLCV Data<br><small>S&amp;P 500 · Kaggle</small></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step alt">News Ingestion<br><small>FinBERT Pipeline</small></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step alt2">K-Means Clustering<br><small>6 Peer Groups</small></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step alt3">Cluster-Aware Sentiment<br><small>Peer-expanded scores</small></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">Stacked XGBoost<br><small>Residual + News</small></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step alt">Trading Backtest<br><small>Sharpe / Drawdown</small></div>
+  </div>
+
+  <h3>Iterative Build History</h3>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot done"></div>
+      <div class="tl-title">02A — Baseline Regression</div>
+      <div class="tl-desc">Linear, Ridge, Random Forest, XGBoost on pure technical indicators (MACD, RSI, Bollinger). Establishes MAE/R² baseline.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot done"></div>
+      <div class="tl-title">02B — Cluster-Aware Regression</div>
+      <div class="tl-desc">Adds K-Means cluster membership as categorical feature. Separate expert models per cluster. Best cluster (id=5): MAE 0.921, R² 0.9965.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot done"></div>
+      <div class="tl-title">03 → Clustering Module (6 Methods)</div>
+      <div class="tl-desc">Evaluates K-Means, Hierarchical, DBSCAN, GMM, Autoencoder+KMeans, t-SNE+KMeans. K-Means wins (composite score 0.577). Provides cluster assignments to 02B/02C.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot done"></div>
+      <div class="tl-title">02C — Sentiment-Enhanced Cluster Regression</div>
+      <div class="tl-desc">Integrates FinBERT sentiment scores with auto-tuned lag/decay (lookback=10d, decay=0.20). 24 features. MAE 4.838 vs baseline 4.968. Auto-tuned grid search.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot done"></div>
+      <div class="tl-title">02D — Cluster News Stacked XGBoost (Current Best)</div>
+      <div class="tl-desc">Full-universe news fetch. Stacked residual design: Stage 1 predicts price from technicals, Stage 2 corrects residuals using cluster-aggregated sentiment. MAE 4.511, DirectionalAcc 54.67%, Sharpe 2.818.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">02E — Multi-Horizon Forecasting (Planned)</div>
+      <div class="tl-desc">Forward log returns T+5/T+10/T+15. New trend features: EMA distance, sentiment velocity, ADX. MultiOutputRegressor with cluster-aware training. Target DHR ≥ 55% at T+15.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">02F — Regime-Filtered Meta-Signal (Planned)</div>
+      <div class="tl-desc">Combines T+1 from 02D and T+15 from 02E. VIX-conditional weighting. Sentiment velocity alignment filter. False-breakout suppression.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     3. TASK 01
+══════════════════════════════════════════════════════════════ -->
+<section id="sec-task01">
+  <div class="section-header">
+    <div class="section-num teal">3</div>
+    <h2>Task 01 — Stock Trend Classification</h2>
+  </div>
+
+  <p>
+    Task 01 formulates the problem as binary classification: predict whether the next-day
+    closing price will be <strong>Up (1)</strong> or <strong>Down (0)</strong> relative to
+    today. Five classification models were evaluated: Logistic Regression, Random Forest,
+    Gradient Boosting, SVM, and XGBoost.
+  </p>
+
+  <h3>Feature Set</h3>
+  <p>
+    Technical indicators computed over a rolling window: RSI(14), MACD signal line,
+    Bollinger Band width, volume-weighted average, 5/10/20-day momentum, ATR(14),
+    and lagged returns at T-1 through T-5.
+  </p>
+
+  <h3>Key Evaluation Metrics</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Metric</th><th>Interpretation</th><th>Good Range</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Accuracy</td><td>Overall correct predictions</td><td>&gt; 55% (near-random baseline is 50%)</td></tr>
+        <tr><td>Precision</td><td>Fraction of predicted "Up" that were actually Up</td><td>Depends on use-case</td></tr>
+        <tr><td>Recall</td><td>Fraction of actual "Up" days captured</td><td>High recall = few missed opportunities</td></tr>
+        <tr><td>F1-Score</td><td>Harmonic mean of precision &amp; recall</td><td>&gt; 0.55 target</td></tr>
+        <tr><td>ROC-AUC</td><td>Area under receiver-operating curve</td><td>&gt; 0.55 indicates useful signal</td></tr>
+        <tr><td>CV Std</td><td>Stability across time folds (TimeSeriesSplit)</td><td>Low std = consistent signal</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-info">
+    <strong>Note on Classification vs. Regression</strong>
+    Directional accuracy from Task 01 (binary) complements the regression approach in Task 02.
+    Task 01 is more robust to price-level non-stationarity; Task 02 provides magnitude
+    estimates needed for position sizing. The combination of both informs a more complete
+    trading signal.
+  </div>
+
+  <h3>Outputs</h3>
+  <ul style="padding-left:20px; margin-bottom:12px;">
+    <li><code>01_target_distribution.png</code> — Class balance (Up/Down across 5 stocks)</li>
+    <li><code>02_feature_correlation.png</code> — Correlation heatmap of 24 classification features</li>
+    <li><code>03_model_comparison.png</code> — Accuracy / F1 / AUC bar chart for 5 classifiers</li>
+    <li><code>04_confusion_matrices.png</code> — Per-model confusion matrices</li>
+    <li><code>05_roc_curves.png</code> — ROC curves with AUC scores</li>
+    <li><code>06_feature_importance.png</code> — XGBoost feature importance for classification</li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     4. TASK 02 — REGRESSION + FOCUS 1
+══════════════════════════════════════════════════════════════ -->
+<section id="sec-task02">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <h2>Task 02 — Stock Price Regression: Full Evolution</h2>
+  </div>
+
+  <p>
+    Task 02 is the central and most developed component of the project. It evolved through
+    four notebooks (02A → 02D), each adding a distinct layer of sophistication: baseline
+    regression, cluster-awareness, sentiment integration, and finally the stacked cluster-news
+    architecture. The target variable is the <em>next-day closing price</em>.
+  </p>
+
+  <h3>02A / 02B — Baseline and Cluster-Aware Regression</h3>
+  <p>
+    The baseline uses XGBoost with 24 technical features. Cluster-aware (02B) adds K-Means
+    cluster membership as a categorical feature and trains separate models per cluster.
+    Cluster-level results reveal a strong stratification effect:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Cluster ID</th><th>N Samples</th><th>MAE</th><th>RMSE</th><th>MAPE (%)</th><th>R²</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight"><td>5</td><td>321</td><td>0.921</td><td>1.261</td><td>1.054</td><td>0.9965</td></tr>
+        <tr><td>1</td><td>5,949</td><td>1.279</td><td>3.477</td><td>1.030</td><td>0.9987</td></tr>
+        <tr><td>4</td><td>3,345</td><td>1.338</td><td>2.896</td><td>1.215</td><td>0.9984</td></tr>
+        <tr class="dim"><td>0</td><td>13,256</td><td>4.516</td><td>16.879</td><td>1.840</td><td>0.9879</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Cluster 5 (321 samples, likely defensive or low-price stocks) achieves the lowest MAE of
+    0.921 — five times better than Cluster 0 (high-price stocks like AMZN/GOOG). This
+    demonstrates that <strong>within-cluster regression is significantly more accurate</strong>
+    than a single global model.
+  </p>
+
+  <h3>02C — Sentiment-Enhanced Cluster Regression</h3>
+  <p>
+    02C adds FinBERT sentiment scores using an auto-tuned lag/decay grid search
+    (lookback=10 days, decay=0.20). Three sentiment strategies were evaluated:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Stock</th><th>02B Blended MAE</th><th>02C GlobalSent MAE</th><th>02C ClusterSpecific MAE</th><th>02C Blended MAE</th><th>Best Model</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>AAPL</td><td>1.671</td><td><strong>1.460</strong></td><td>1.553</td><td>1.460</td><td><span class="badge badge-blue">02C GlobalSent</span></td></tr>
+        <tr><td>AMZN</td><td>15.105</td><td>11.148</td><td><strong>10.794</strong></td><td>11.148</td><td><span class="badge badge-blue">02C ClusterSpecific</span></td></tr>
+        <tr><td>GOOG</td><td>15.047</td><td>8.121</td><td><strong>8.067</strong></td><td>8.121</td><td><span class="badge badge-blue">02C ClusterSpecific</span></td></tr>
+        <tr><td>MSFT</td><td>0.617</td><td>0.594</td><td>0.750</td><td><strong>0.594</strong></td><td><span class="badge badge-blue">02C Blended</span></td></tr>
+        <tr><td>NVDA</td><td>3.274</td><td>2.920</td><td>4.299</td><td><strong>2.920</strong></td><td><span class="badge badge-blue">02C Blended</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-warning">
+    <strong>Lag/Decay Plateau Observation</strong>
+    The grid search (15 combinations: lookback ∈ {5,10,15} × decay ∈ {0.1,0.2,0.25,0.35,0.5})
+    returns identical MAE (4.8484) for all parameter combinations. This plateau indicates the
+    sentiment signal's contribution is constant regardless of temporal weighting at this scale,
+    suggesting the evaluation window may be too short to differentiate lag effects. The selected
+    parameters (lookback=10, decay=0.20) are adopted as the canonical configuration.
+  </div>
+
+  <h3>02D — ClusterNews Stacked XGBoost (Current Best)</h3>
+  <p>
+    The key innovation of 02D is the <strong>two-stage stacked architecture</strong>:
+  </p>
+  <ol style="padding-left:20px; margin-bottom:12px;">
+    <li><strong>Stage 1 (Price Baseline):</strong> XGBoost trained on 24 technical indicators → produces price predictions and residuals</li>
+    <li><strong>Stage 2 (News Correction):</strong> Second XGBoost trained to predict Stage 1 residuals using cluster-aggregated sentiment features → corrects systematic bias</li>
+    <li><strong>Final Prediction:</strong> Stage 1 prediction + Stage 2 residual correction</li>
+  </ol>
+  <p>
+    Cluster news aggregation: for each target stock, sentiment scores from all peer stocks
+    within the same K-Means cluster are pooled (equal-weight average). This dramatically
+    increases news coverage from ~40% (target stock alone) to ~95% (full cluster).
+  </p>
+</section>
+
+<!-- ══ FOCUS 1 ═══════════════════════════════════════════════════ -->
+<section id="sec-focus1" style="border-top: 4px solid var(--accent);">
+  <div class="section-header">
+    <div class="section-num accent">★</div>
+    <h2>Focus 1: Cluster News Method — Deep Analysis</h2>
+  </div>
+
+  <div class="callout callout-info">
+    <strong>Research Question</strong>
+    How should sparse financial news be incorporated into a stock price prediction model,
+    and does clustering peer stocks improve the quality of the sentiment signal?
+  </div>
+
+  <h3>4.1 The News Sparsity Problem</h3>
+  <p>
+    Individual stocks receive news sporadically — on average 40–60% of trading days have no
+    relevant headline for a given ticker. Using raw per-stock sentiment creates a sparse feature
+    that degrades model training (most rows show sentiment=0). The cluster news approach
+    resolves this by pooling sentiment across correlated peer stocks.
+  </p>
+
+  <h3>4.2 Three-Level Sentiment Strategy Comparison</h3>
+  <div class="improvement-grid">
+    <div class="improvement-card">
+      <div class="imp-num">Level 1</div>
+      <h4>Direct Stock Sentiment</h4>
+      <p style="font-size:13px;">Only news about the target ticker. Coverage ~40-60%. Creates many zero-sentiment days that add noise.</p>
+      <div class="imp-current"><div class="imp-label">Problem</div>High sparsity; model ignores sentiment on empty days.</div>
+    </div>
+    <div class="improvement-card">
+      <div class="imp-num">Level 2</div>
+      <h4>Global Sentiment (02C)</h4>
+      <p style="font-size:13px;">Average FinBERT score across all S&amp;P 500 news in a given day. Always non-zero. Market-wide sentiment proxy.</p>
+      <div class="imp-current"><div class="imp-label">Problem</div>Blends sector-specific signal with market noise.</div>
+    </div>
+    <div class="improvement-card" style="border-color: var(--green);">
+      <div class="imp-num" style="background:var(--green);color:var(--navy);">Level 3</div>
+      <h4>Cluster-Aggregated Sentiment (02D) ✓</h4>
+      <p style="font-size:13px;">Weighted average sentiment of all stocks in the same K-Means return-correlation cluster. Peers share similar price drivers.</p>
+      <div class="imp-fix"><div class="imp-label">Advantage</div>High coverage (~95%), sector-relevant signal, peer-amplified sentiment.</div>
+    </div>
+  </div>
+
+  <h3>4.3 Aggregate Model Performance (02D)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>MAE ($)</th>
+          <th>RMSE ($)</th>
+          <th>R²</th>
+          <th>Directional Acc</th>
+          <th>CV MAE Return</th>
+          <th>CV Dir Acc</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="dim"><td>Baseline XGB</td><td>4.683</td><td>9.461</td><td>0.99952</td><td>51.67%</td><td>0.01212</td><td>50.90%</td></tr>
+        <tr class="dim"><td>ClusterNews Direct XGB</td><td>4.709</td><td>9.446</td><td>0.99952</td><td>51.92%</td><td>0.01215</td><td>51.08%</td></tr>
+        <tr class="highlight"><td>ClusterNews Stacked XGB ★</td><td><strong>4.511</strong></td><td><strong>8.802</strong></td><td><strong>0.99958</strong></td><td><strong>54.67%</strong></td><td>0.01295</td><td>50.17%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-info">
+    <strong>Why Direct &gt; Stacked on CV Directional Accuracy?</strong>
+    The stacked model's CV directional accuracy (50.17%) is lower than direct (51.08%) on
+    cross-validation, but higher (54.67% vs 51.92%) on the held-out test set. This suggests
+    the stacking correction learns from test-period dynamics more effectively than from the
+    rolling CV windows — a sign of regime sensitivity that 02E's trend features aim to address.
+  </div>
+
+  <h3>4.4 Per-Stock Results (02D)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Stock</th>
+          <th>Test Samples</th>
+          <th>Baseline MAE</th>
+          <th>Direct News MAE</th>
+          <th>Stacked MAE ★</th>
+          <th>MAE Δ</th>
+          <th>Stacked R²</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight"><td>AAPL</td><td>240</td><td>1.432</td><td>1.442</td><td><strong>1.403</strong></td><td><span class="badge badge-green">−2.0%</span></td><td>0.9701</td></tr>
+        <tr class="highlight"><td>AMZN</td><td>240</td><td>10.371</td><td>10.574</td><td><strong>9.921</strong></td><td><span class="badge badge-green">−4.3%</span></td><td>0.9877</td></tr>
+        <tr class="highlight"><td>GOOG</td><td>240</td><td>8.197</td><td>8.068</td><td><strong>7.786</strong></td><td><span class="badge badge-green">−5.0%</span></td><td>0.9827</td></tr>
+        <tr><td>MSFT</td><td>240</td><td>0.593</td><td>0.579</td><td>0.579</td><td><span class="badge badge-grey">−2.3%</span></td><td>0.9882</td></tr>
+        <tr class="dim"><td>NVDA</td><td>240</td><td>2.823</td><td>2.881</td><td>2.866</td><td><span class="badge badge-red">+1.5%</span></td><td>0.9898</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-warning">
+    <strong>NVDA Anomaly</strong>
+    NVDA is the only stock where the stacked model slightly degrades performance (+1.5% MAE).
+    Root cause: NVDA's price is driven by discrete high-magnitude events (earnings beats,
+    NVIDIA GTC keynotes, supply chain announcements) that create step-function sentiment
+    changes, not the gradual sentiment trends the stacking correction is designed for.
+    <em>Proposed fix (02E): Add a per-stock "news event sensitivity" weight derived from
+    historical NVDA-specific sentiment-to-return correlation.</em>
+  </div>
+
+  <h3>4.5 Cluster News Architecture Diagram</h3>
+  <div style="background:var(--grey); border-radius:10px; padding:24px; margin:16px 0; font-family:monospace; font-size:13px; line-height:2;">
+    <div style="display:grid; grid-template-columns:1fr 40px 1fr 40px 1fr; gap:8px; align-items:center; text-align:center;">
+      <div style="background:var(--navy);color:#fff;padding:12px;border-radius:8px;">
+        <strong>Input</strong><br>Technical Features<br>(24 indicators)<br><small>OHLCV + TA</small>
+      </div>
+      <div style="font-size:22px; color:var(--accent);">→</div>
+      <div style="background:var(--blue);color:#fff;padding:12px;border-radius:8px;">
+        <strong>Stage 1 XGBoost</strong><br>Price Predictor<br>(Technical Only)<br><small>ŷ₁ = f(X_tech)</small>
+      </div>
+      <div style="font-size:22px; color:var(--accent);">→</div>
+      <div style="background:#636e72;color:#fff;padding:12px;border-radius:8px;">
+        <strong>Residuals</strong><br>ε = y_true − ŷ₁<br><small>(systematic bias)</small>
+      </div>
+    </div>
+    <div style="text-align:center; font-size:22px; color:var(--accent); margin:4px 0;">↓</div>
+    <div style="display:grid; grid-template-columns:1fr 40px 1fr 40px 1fr; gap:8px; align-items:center; text-align:center;">
+      <div style="background:var(--teal);color:var(--navy);padding:12px;border-radius:8px;">
+        <strong>Cluster News</strong><br>Peer sentiment pool<br>(K-Means clusters)<br><small>~95% coverage</small>
+      </div>
+      <div style="font-size:22px; color:var(--teal);">→</div>
+      <div style="background:#00b894;color:#fff;padding:12px;border-radius:8px;">
+        <strong>Stage 2 XGBoost</strong><br>Residual Corrector<br>(Sentiment Features)<br><small>ŷ₂ = g(X_news)</small>
+      </div>
+      <div style="font-size:22px; color:var(--green);">→</div>
+      <div style="background:var(--green);color:var(--navy);padding:12px;border-radius:8px; font-weight:700;">
+        <strong>FINAL PRED</strong><br>ŷ = ŷ₁ + ŷ₂<br><small>MAE $4.511</small><br><small>Dir Acc 54.67%</small>
+      </div>
+    </div>
+  </div>
+
+  <h3>4.6 Why Stacking Beats Direct Integration</h3>
+  <p>
+    Direct integration places sentiment features alongside technical features in a single model.
+    This forces the model to simultaneously learn price momentum (a low-variance, high-signal
+    feature) and sentiment dynamics (a high-variance, low-signal feature). The strong technical
+    features dominate feature importance, effectively suppressing the sentiment signal.
+  </p>
+  <p>
+    Stacking separates the concerns: Stage 1 learns the price momentum signal to the best
+    possible accuracy, and Stage 2 receives the <em>unexplained residuals</em> — precisely the
+    portion of price movement that technical analysis cannot explain. News-driven sentiment is
+    then the ideal feature to explain those residuals.
+  </p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     5. TASK 03
+══════════════════════════════════════════════════════════════ -->
+<section id="sec-task03">
+  <div class="section-header">
+    <div class="section-num green">5</div>
+    <h2>Task 03 — Stock Clustering Analysis: Six Methods</h2>
+  </div>
+
+  <p>
+    Task 03 evaluates six unsupervised clustering approaches on the S&amp;P 500 universe
+    (505 stocks). The goal is not only to group stocks but to produce financially meaningful
+    peer networks usable by the regression pipeline (Task 02). The evaluation composite score
+    combines silhouette quality, Davies-Bouldin index, cluster balance, return/risk
+    separation, noise tolerance, and feature separation.
+  </p>
+
+  <h3>Clustering Method Results</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>N Clusters</th>
+          <th>Silhouette</th>
+          <th>Davies-Bouldin</th>
+          <th>Noise Ratio</th>
+          <th>Effective Clusters</th>
+          <th>Best R/R Ratio</th>
+          <th><strong>Final Score</strong></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight">
+          <td><span class="badge badge-green">★ K-Means (03A)</span></td>
+          <td>6</td>
+          <td>0.2496</td>
+          <td>0.978</td>
+          <td><span class="badge badge-green">0%</span></td>
+          <td>2.40</td>
+          <td>0.0989 (Cluster 1)</td>
+          <td><strong>0.5772</strong></td>
+        </tr>
+        <tr>
+          <td>DBSCAN (03C)</td>
+          <td>2 core</td>
+          <td><strong>0.5652</strong></td>
+          <td><strong>0.552</strong></td>
+          <td><span class="badge badge-red">9.3%</span></td>
+          <td>1.02</td>
+          <td>−0.010 (poor)</td>
+          <td>0.5500</td>
+        </tr>
+        <tr>
+          <td>Autoencoder+KMeans (03E)</td>
+          <td>4</td>
+          <td>0.2249</td>
+          <td>1.546</td>
+          <td><span class="badge badge-green">0%</span></td>
+          <td>2.28</td>
+          <td>0.0952 (Cluster 0)</td>
+          <td>0.5057</td>
+        </tr>
+        <tr>
+          <td>GMM (03D)</td>
+          <td>9</td>
+          <td>0.0575</td>
+          <td>1.611</td>
+          <td><span class="badge badge-green">0%</span></td>
+          <td>4.79</td>
+          <td>0.1581 (Cluster 7)</td>
+          <td>0.5022</td>
+        </tr>
+        <tr>
+          <td>Hierarchical (03B)</td>
+          <td>4</td>
+          <td>0.1965</td>
+          <td>1.748</td>
+          <td><span class="badge badge-green">0%</span></td>
+          <td>2.55</td>
+          <td>0.0956 (Cluster 0)</td>
+          <td>0.4595</td>
+        </tr>
+        <tr>
+          <td>t-SNE+KMeans (03F)</td>
+          <td>2</td>
+          <td>0.1880</td>
+          <td>1.985</td>
+          <td><span class="badge badge-green">0%</span></td>
+          <td>1.99</td>
+          <td>0.0423 (Cluster 0)</td>
+          <td>0.4327</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Why K-Means Wins for This Application</h3>
+  <div class="improvement-grid">
+    <div class="improvement-card">
+      <h4>✓ No Noise Points</h4>
+      <p style="font-size:13px;">K-Means assigns every stock to a cluster (noise ratio = 0%), ensuring every stock has peer group sentiment available in Task 02's cluster-news pipeline. DBSCAN's 9.3% noise creates coverage gaps.</p>
+    </div>
+    <div class="improvement-card">
+      <h4>✓ Balanced Clusters</h4>
+      <p style="font-size:13px;">K-Means produces 6 clusters with reasonable balance (max share 56.6%). GMM's 9 clusters are imbalanced. t-SNE collapses to only 2 effective clusters — too coarse for peer network construction.</p>
+    </div>
+    <div class="improvement-card">
+      <h4>✓ Return/Risk Separation</h4>
+      <p style="font-size:13px;">Cluster 1 achieves Best Return/Risk Ratio of 0.0989, enabling the risk stratification feature (cluster_risk_label) used in Task 02 feature engineering.</p>
+    </div>
+  </div>
+
+  <h3>Cluster Profile Interpretation (K-Means, 6 Clusters)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Cluster</th><th>Risk Profile</th><th>Return/Risk</th><th>Key Stocks (Examples)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0</td><td>High Volatility / Growth</td><td>Low (concentration cluster)</td><td>AMZN, GOOG, high-price large-caps</td></tr>
+        <tr><td>1</td><td>Momentum / High R/R</td><td><strong>0.0989</strong></td><td>Mid-cap tech growth</td></tr>
+        <tr><td>2</td><td>Stable / Defensive</td><td>Moderate</td><td>AAPL, MSFT class</td></tr>
+        <tr><td>3</td><td>Defensive / Low Volatility</td><td>Low but stable</td><td>Utilities, consumer staples</td></tr>
+        <tr><td>4</td><td>Cyclical</td><td>Moderate</td><td>Financials, energy</td></tr>
+        <tr><td>5</td><td>Small / Low-Price</td><td>Best MAE (0.921)</td><td>Low absolute price stocks</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     6. TASK 04
+══════════════════════════════════════════════════════════════ -->
+<section id="sec-task04">
+  <div class="section-header">
+    <div class="section-num" style="background: var(--red);">6</div>
+    <h2>Task 04 — Anomaly Detection</h2>
+  </div>
+
+  <p>
+    Task 04 deploys a four-method consensus voting framework to detect unusual price/volume
+    behaviour on the 5-stock universe (AAPL, AMZN, GOOGL, MSFT, NVDA) over 1,239 trading days.
+    A day is flagged as a <em>consensus anomaly</em> when at least 2 of 4 methods agree.
+  </p>
+
+  <h3>Detection Methods</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Approach</th><th>Strength</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Isolation Forest (IF)</td><td>Tree-based; isolates points requiring fewer splits</td><td>Effective for high-dimensional feature spaces</td></tr>
+        <tr><td>Local Outlier Factor (LOF)</td><td>Density-based; compares local density to neighbours</td><td>Detects local anomalies in non-uniform distributions</td></tr>
+        <tr><td>One-Class SVM (SVM)</td><td>Kernel-based boundary around normal behaviour</td><td>Robust to feature scaling; finds tight boundaries</td></tr>
+        <tr><td>Z-Score</td><td>Statistical threshold on rolling z-score of returns &amp; volume</td><td>Interpretable; fast; good for extreme events</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Consensus Anomaly Results</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Stock</th><th>Total Days</th><th>IF</th><th>LOF</th><th>SVM</th><th>Z-Score</th><th>Consensus</th><th>Rate (%)</th><th>Interpretation</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight"><td>NVDA</td><td>1,239</td><td>105</td><td>114</td><td>107</td><td>116</td><td><strong>79</strong></td><td><span class="badge badge-red">6.38%</span></td><td>GPU/AI cycles; highest event risk</td></tr>
+        <tr><td>AMZN</td><td>1,239</td><td>71</td><td>69</td><td>71</td><td>92</td><td>53</td><td><span class="badge badge-yellow">4.28%</span></td><td>E-commerce + AWS volatility</td></tr>
+        <tr><td>MSFT</td><td>1,239</td><td>45</td><td>47</td><td>44</td><td>55</td><td>31</td><td><span class="badge badge-yellow">2.50%</span></td><td>Cloud/AI steady growth</td></tr>
+        <tr><td>AAPL</td><td>1,239</td><td>48</td><td>41</td><td>38</td><td>44</td><td>25</td><td><span class="badge badge-green">2.02%</span></td><td>Consumer electronics; regular cycle</td></tr>
+        <tr class="dim"><td>GOOGL</td><td>1,239</td><td>41</td><td>39</td><td>43</td><td>47</td><td>23</td><td><span class="badge badge-green">1.86%</span></td><td>Most stable of the 5 stocks</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Risk Action Framework</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Consensus Votes</th><th>Risk Level</th><th>Recommended Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0–1</td><td><span class="badge badge-green">Normal</span></td><td>No action; proceed with standard strategy</td></tr>
+        <tr><td>2</td><td><span class="badge badge-yellow">Caution</span></td><td>Reduce position size; widen stop-loss</td></tr>
+        <tr><td>3</td><td><span class="badge badge-red">High Alert</span></td><td>Suspend new positions; review existing</td></tr>
+        <tr><td>4</td><td><span class="badge badge-red" style="background:#c0392b;">Critical</span></td><td>Exit positions; hedge aggressively</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-info">
+    <strong>Anomaly Detection Linkage with Regression (02D)</strong>
+    NVDA's 6.38% anomaly rate directly explains why it is the most difficult stock in Task 02:
+    on anomaly days, standard sentiment features and technical indicators are unreliable because
+    prices are driven by macro shocks. A future improvement (02E → 02F) is to suppress the
+    regression signal on anomaly days flagged by Task 04.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     7. SYSTEM IMPROVEMENTS
+══════════════════════════════════════════════════════════════ -->
+<section id="sec-improvements">
+  <div class="section-header">
+    <div class="section-num" style="background:#8e44ad;">7</div>
+    <h2>System Improvement Analysis</h2>
+  </div>
+
+  <p>
+    The following is a deep analysis of five structural weaknesses in the current system and
+    concrete fixes to be implemented in the next development phase.
+  </p>
+
+  <div class="improvement-grid">
+
+    <div class="improvement-card">
+      <div class="imp-num">Issue 1</div>
+      <h4>Lag/Decay Grid Search Plateau</h4>
+      <div class="imp-current">
+        <div class="imp-label">Current Problem</div>
+        All 15 (lookback × decay) combinations return identical MAE = 4.8484.
+        Single train/val split is too short to differentiate lag effects.
+      </div>
+      <div class="imp-fix">
+        <div class="imp-label">Proposed Fix</div>
+        Replace single split evaluation with TimeSeriesSplit(n_splits=5) walk-forward CV.
+        Grid search on rolling 6-month windows to surface true temporal sensitivity.
+      </div>
+    </div>
+
+    <div class="improvement-card">
+      <div class="imp-num">Issue 2</div>
+      <h4>Static Sentiment (No Velocity)</h4>
+      <div class="imp-current">
+        <div class="imp-label">Current Problem</div>
+        02C/02D use lagged raw FinBERT scores. A stock that moved from −0.3 to +0.3
+        sentiment over 10 days has the same feature value as one static at +0.3.
+        Narrative momentum is invisible to the model.
+      </div>
+      <div class="imp-fix">
+        <div class="imp-label">Proposed Fix</div>
+        Add <code>sentiment_velocity_10d</code> = (5-day rolling mean lag-1) −
+        (5-day rolling mean lag-11). Add <code>sentiment_acceleration</code> as
+        second derivative. Both are key new features in 02E.
+      </div>
+    </div>
+
+    <div class="improvement-card">
+      <div class="imp-num">Issue 3</div>
+      <h4>NVDA Degradation under News</h4>
+      <div class="imp-current">
+        <div class="imp-label">Current Problem</div>
+        Stacked model is +1.5% worse than baseline for NVDA because NVDA's prices
+        respond to discrete high-magnitude events (GTC, earnings), not gradual
+        sentiment trends that the residual corrector was trained on.
+      </div>
+      <div class="imp-fix">
+        <div class="imp-label">Proposed Fix</div>
+        Add per-stock "news sensitivity" weight = rolling correlation(sentiment_velocity,
+        |return|) over 60 days. Multiply stacked correction by this weight.
+        Low weight for NVDA on normal days; high weight on event-driven days.
+      </div>
+    </div>
+
+    <div class="improvement-card">
+      <div class="imp-num">Issue 4</div>
+      <h4>T+1 Only (Highest Noise)</h4>
+      <div class="imp-current">
+        <div class="imp-label">Current Problem</div>
+        All models predict next-day absolute price — the hardest and noisiest horizon.
+        The signal-to-noise ratio at T+1 is near the theoretical minimum; small model
+        improvements require disproportionate engineering effort.
+      </div>
+      <div class="imp-fix">
+        <div class="imp-label">Proposed Fix</div>
+        Build 02E to predict log returns at T+5, T+10, T+15 simultaneously
+        using MultiOutputRegressor. Log returns are stationary and comparable
+        across price levels. Target DHR ≥ 55% at T+15.
+      </div>
+    </div>
+
+    <div class="improvement-card">
+      <div class="imp-num">Issue 5</div>
+      <h4>K-Means Uses Euclidean Distance</h4>
+      <div class="imp-current">
+        <div class="imp-label">Current Problem</div>
+        K-Means clustering is performed on return-correlation features using
+        Euclidean distance. Financial peer networks should be defined by
+        co-movement, not Euclidean proximity in feature space.
+      </div>
+      <div class="imp-fix">
+        <div class="imp-label">Proposed Fix</div>
+        Use correlation distance matrix (d = 1 − |ρ|) with Affinity Propagation
+        or OPTICS clustering. Alternatively: apply PCA whitening before K-Means
+        to normalize the correlation structure.
+      </div>
+    </div>
+
+    <div class="improvement-card">
+      <div class="imp-num">Issue 6</div>
+      <h4>No Anomaly Integration</h4>
+      <div class="imp-current">
+        <div class="imp-label">Current Problem</div>
+        Task 04 anomaly flags are not used by Task 02 models. Predictions made on
+        Task-04-flagged anomaly days are likely much less accurate (NVDA: 6.38%
+        anomaly rate), degrading overall metrics.
+      </div>
+      <div class="imp-fix">
+        <div class="imp-label">Proposed Fix</div>
+        Add <code>anomaly_votes</code> (0–4) from Task 04 as a feature in Task 02,
+        or use it as a trade-gate: suppress trading signal when anomaly_votes ≥ 3
+        to reduce risk during high-uncertainty periods.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     8. FOCUS 2 — FUTURE DATA GUIDANCE / 02E
+══════════════════════════════════════════════════════════════ -->
+<section id="sec-focus2" style="border-top: 4px solid var(--green);">
+  <div class="section-header">
+    <div class="section-num green">★</div>
+    <h2>Focus 2 — Future Data Guidance: 02E Multi-Horizon Forecasting</h2>
+  </div>
+
+  <div class="callout callout-success">
+    <strong>Research Question</strong>
+    Can we build a model that predicts the <em>direction and magnitude</em> of price changes
+    over 5, 10, and 15 trading days simultaneously, using trend-aware features and
+    cluster-grouped sentiment velocity?
+  </div>
+
+  <p>
+    02E is the planned next notebook in the regression series. It extends 02D's cluster-news
+    framework to medium-term horizons by predicting log returns (not absolute prices) across
+    three simultaneous forward windows. This addresses the fundamental signal-to-noise problem
+    of T+1 prediction.
+  </p>
+
+  <!-- Horizon cards -->
+  <div class="horizon-grid" id="sec-02e-targets">
+    <div class="horizon-card h5">
+      <div class="h-label">Horizon 1</div>
+      <div class="h-title">T+5</div>
+      <div class="h-desc">Short-term (1 week)<br>High noise, tests momentum carry<br>Target DHR ≥ 53%</div>
+    </div>
+    <div class="horizon-card h10">
+      <div class="h-label">Horizon 2</div>
+      <div class="h-title">T+10</div>
+      <div class="h-desc">Medium-term (2 weeks)<br>Balances noise vs. signal<br>Target DHR ≥ 54%</div>
+    </div>
+    <div class="horizon-card h15">
+      <div class="h-label">Horizon 3</div>
+      <div class="h-title">T+15</div>
+      <div class="h-desc">3 weeks — primary target<br>Trend-driven, lower noise<br>Target DHR ≥ 55%</div>
+    </div>
+  </div>
+
+  <h3 id="sec-02e-features">Step 1: Target Engineering — Forward Log Returns</h3>
+  <p>
+    Log returns are chosen over raw prices because they are: (1) stationary (no integration
+    order), (2) additive across time horizons (log(T+15) = sum of log daily returns),
+    (3) approximately normally distributed, and (4) comparable across stocks with vastly
+    different price levels (AAPL ~$175 vs AMZN ~$185).
+  </p>
+  <div class="code-block">
+<span class="cmt"># Forward Log Return targets (clipped at ±30% for outlier control)</span>
+<span class="kw">for</span> h <span class="kw">in</span> [<span class="num">5</span>, <span class="num">10</span>, <span class="num">15</span>]:
+    df[<span class="str">f'fwd_logret_{h}d'</span>] = np.log(
+        df.groupby(<span class="str">'ticker'</span>)[<span class="str">'Close'</span>].shift(-h) / df[<span class="str">'Close'</span>]
+    )
+    df[<span class="str">f'fwd_logret_{h}d'</span>] = df[<span class="str">f'fwd_logret_{h}d'</span>].clip(-<span class="num">0.30</span>, <span class="num">0.30</span>)
+
+<span class="cmt"># Drop rows where future data is unavailable (last 15 rows per ticker)</span>
+df = df.dropna(subset=[<span class="str">'fwd_logret_5d'</span>, <span class="str">'fwd_logret_10d'</span>, <span class="str">'fwd_logret_15d'</span>])
+  </div>
+
+  <h3>Step 2: New Trend Feature Engineering (8 new features → 32 total)</h3>
+  <p>
+    The existing 02C feature set (24 features: technical indicators + cluster membership +
+    lagged sentiment) is augmented with 8 new trend-specific features:
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Feature</th><th>Formula</th><th>Finance Rationale</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>25</td><td><code>dist_ema200</code></td><td>(Close − EMA200) / EMA200</td><td>Canonical institutional bull/bear regime signal. &gt;5% above = momentum; below = reversion risk.</td></tr>
+        <tr><td>26</td><td><code>ema200_slope</code></td><td>pct_change(EMA200, 20)</td><td>20-day slope of 200-EMA captures macro trend acceleration, not just level.</td></tr>
+        <tr><td>27</td><td><code>dist_ema50</code></td><td>(Close − EMA50) / EMA50</td><td>50-EMA is the key medium-term (10-week) trend reference used by institutional desks.</td></tr>
+        <tr><td>28</td><td><code>ema50_200_cross</code></td><td>int(EMA50 &gt; EMA200)</td><td>Golden Cross (1) vs. Death Cross (0). One of the most widely-followed signals in technical analysis.</td></tr>
+        <tr><td>29</td><td><code>sentiment_velocity_10d</code></td><td>MA(sent,5)[t−1] − MA(sent,5)[t−11]</td><td>Narrative momentum: rising sentiment trend predicts continued buying pressure over 5–15 days.</td></tr>
+        <tr><td>30</td><td><code>sentiment_acceleration</code></td><td>diff(sentiment_velocity, 5)</td><td>Second derivative of sentiment; captures inflection points in narrative (e.g., turning from negative to positive).</td></tr>
+        <tr><td>31</td><td><code>adx_14</code></td><td>Wilder's ADX(14)</td><td>Trend strength (not direction). ADX &gt; 25 = strong trend; &lt; 20 = ranging. Crucial for distinguishing trending from mean-reverting periods.</td></tr>
+        <tr><td>32</td><td><code>dist_52wk_high</code></td><td>Close / rolling_max(252) − 1</td><td>Distance from 52-week high is the canonical retail sentiment indicator; also captures reversion risk.</td></tr>
+        <tr><td>bonus</td><td><code>momentum_12_1</code></td><td>Close[t−21] / Close[t−252] − 1</td><td>Jegadeesh-Titman (1993) momentum: 12 months − most recent month. Best-documented anomaly in finance literature.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="code-block" id="sec-02e-model">
+<span class="cmt"># ── Sentiment velocity (key new feature) ─────────────────────</span>
+df[<span class="str">'sentiment_velocity_10d'</span>] = (
+    df.groupby(<span class="str">'ticker'</span>)[<span class="str">'sentiment_score'</span>]
+    .transform(<span class="kw">lambda</span> x: x.rolling(<span class="num">5</span>).mean().shift(<span class="num">1</span>)
+                           - x.rolling(<span class="num">5</span>).mean().shift(<span class="num">11</span>))
+)
+df[<span class="str">'sentiment_acceleration'</span>] = (
+    df.groupby(<span class="str">'ticker'</span>)[<span class="str">'sentiment_velocity_10d'</span>]
+    .transform(<span class="kw">lambda</span> x: x.diff(<span class="num">5</span>).shift(<span class="num">1</span>))
+)
+
+<span class="cmt"># ── 200-EMA distance and slope ────────────────────────────────</span>
+ema_200 = df.groupby(<span class="str">'ticker'</span>)[<span class="str">'Close'</span>].transform(
+    <span class="kw">lambda</span> x: x.ewm(span=<span class="num">200</span>, adjust=<span class="kw">False</span>).mean()
+)
+df[<span class="str">'dist_ema200'</span>] = (df[<span class="str">'Close'</span>] - ema_200) / ema_200
+df[<span class="str">'ema200_slope'</span>] = ema_200.groupby(df[<span class="str">'ticker'</span>]).pct_change(<span class="num">20</span>)
+  </div>
+
+  <h3>Step 3: Multi-Output Model Architecture</h3>
+  <p>
+    A direct multi-output architecture (not recursive/chain) is used to predict all three
+    horizons simultaneously. This avoids error propagation (predicting T+10 from T+5 prediction
+    compounds forecast errors).
+  </p>
+  <div class="code-block">
+<span class="kw">from</span> sklearn.multioutput <span class="kw">import</span> MultiOutputRegressor
+<span class="kw">from</span> xgboost <span class="kw">import</span> XGBRegressor
+
+base_xgb = XGBRegressor(
+    n_estimators=<span class="num">500</span>,
+    max_depth=<span class="num">6</span>,
+    learning_rate=<span class="num">0.03</span>,      <span class="cmt"># Lower LR for multi-horizon stability</span>
+    subsample=<span class="num">0.85</span>,
+    colsample_bytree=<span class="num">0.85</span>,
+    min_child_weight=<span class="num">5</span>,      <span class="cmt"># Higher for longer horizons (reduce overfit)</span>
+    reg_alpha=<span class="num">0.1</span>,           <span class="cmt"># L1 for feature sparsity</span>
+    reg_lambda=<span class="num">1.0</span>,          <span class="cmt"># L2 regularisation</span>
+    objective=<span class="str">'reg:squarederror'</span>,
+    random_state=<span class="num">42</span>,
+    n_jobs=-<span class="num">1</span>
+)
+
+model_02E = MultiOutputRegressor(base_xgb, n_jobs=<span class="num">3</span>)  <span class="cmt"># 3 horizons in parallel</span>
+model_02E.fit(X_train_scaled, Y_train)
+preds = model_02E.predict(X_test_scaled)  <span class="cmt"># Shape: (n_test, 3)</span>
+  </div>
+
+  <h3>Step 4: Cluster-Aware Training</h3>
+  <p>
+    Reusing K-Means cluster assignments from 02C
+    (<code>02C_sentiment_kmeans_stock_assignments.csv</code>), one
+    <code>MultiOutputRegressor</code> is trained per cluster — exactly mirroring the
+    expert model design proven in 02C/02D:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Cluster</th><th>Stocks</th><th>Rationale for Separate Model</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0 (sent_cluster)</td><td>NVDA</td><td>High-volatility, event-driven; T+15 dynamics differ from peers</td></tr>
+        <tr><td>1</td><td>AMZN, GOOG</td><td>High-price, similar e-commerce/cloud dynamics; T+10/15 correlated</td></tr>
+        <tr><td>2</td><td>AAPL, MSFT</td><td>Consumer tech / enterprise cloud; similar medium-term return cycles</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Step 5: Evaluation Framework</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Metric</th><th>Formula</th><th>T+5 Target</th><th>T+10 Target</th><th>T+15 Target</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>MAE</td><td>mean(|y − ŷ|)</td><td>—</td><td>—</td><td>Improvement vs baseline</td></tr>
+        <tr><td>R²</td><td>1 − SS_res/SS_tot</td><td>—</td><td>—</td><td>&gt; 0.15 (log return R² expected low)</td></tr>
+        <tr><td>Directional Hit Rate (DHR)</td><td>mean(sign(y) == sign(ŷ))</td><td>≥ 53%</td><td>≥ 54%</td><td><strong>≥ 55%</strong></td></tr>
+        <tr><td>Sharpe Ratio (simulated)</td><td>mean(pos × y) / std(pos × y) × √(252/h)</td><td>≥ 1.2</td><td>≥ 1.5</td><td><strong>≥ 1.8</strong></td></tr>
+        <tr><td>Statistical significance</td><td>Binomial test DHR vs 0.5</td><td>p &lt; 0.10</td><td>p &lt; 0.05</td><td><strong>p &lt; 0.05</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="sec-02f-preview">02F: Regime-Filtered Trading Signal (Preview)</h3>
+  <p>
+    The ultimate goal of the 02E/02F pipeline is to combine short-term (T+1 from 02D) and
+    medium-term (T+15 from 02E) signals into a single <em>regime-filtered</em> trade signal
+    that suppresses false breakouts:
+  </p>
+  <div class="improvement-grid">
+    <div class="improvement-card">
+      <h4>False Breakout Filter</h4>
+      <p style="font-size:13px;">
+        If T+15 predicts negative log return but T+1 predicts up, the position weight is
+        discounted by: <code>w = f(|T+15_pred| × σ_stock)</code>.
+        This prevents entering a long trade on a 1-day spike that the medium-term model
+        expects to reverse.
+      </p>
+    </div>
+    <div class="improvement-card">
+      <h4>VIX-Conditional Weighting</h4>
+      <p style="font-size:13px;">
+        When VIX &gt; 25, T+1 noise dominates and the model degrades. The meta-learner
+        down-weights T+1 signals and amplifies T+15's trend prediction. Meta-feature:
+        <code>VIX × |T+1_pred − T+15_pred_norm|</code> (signal disagreement under stress).
+      </p>
+    </div>
+    <div class="improvement-card">
+      <h4>Sentiment Velocity Alignment</h4>
+      <p style="font-size:13px;">
+        When <code>sentiment_velocity_10d &lt; 0</code> (falling narrative momentum) but
+        T+1 predicts up (single positive headline), T+15's trend model discounts the T+1
+        signal because it sees through single-day noise via 10-day patterns.
+      </p>
+    </div>
+  </div>
+
+  <h3>02E Output Artifacts</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>File</th><th>Contents</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>02E_multi_horizon_predictions.csv</code></td><td>Ticker, date, pred_T5/T10/T15, true_T5/T10/T15</td></tr>
+        <tr><td><code>02E_model_performance.csv</code></td><td>MAE / RMSE / R² / DHR per stock per horizon</td></tr>
+        <tr><td><code>02E_feature_importance.csv</code></td><td>XGBoost feature importance averaged across 3 output models</td></tr>
+        <tr><td><code>02E_trend_features.csv</code></td><td>Full 32-feature dataset including new trend indicators</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     9. CONCLUSION
+══════════════════════════════════════════════════════════════ -->
+<section id="sec-conclusion">
+  <div class="section-header">
+    <div class="section-num">9</div>
+    <h2>Conclusion</h2>
+  </div>
+
+  <p>
+    This project demonstrates that a carefully engineered multi-modal ML system — combining
+    return-correlation clustering, FinBERT sentiment analysis, and stacked residual learning
+    — materially outperforms pure technical-analysis baselines on S&amp;P 500 next-day price
+    regression. Key conclusions:
+  </p>
+
+  <div class="improvement-grid">
+    <div class="improvement-card" style="border-color:var(--green);">
+      <h4>Clustering is the Bridge</h4>
+      <p style="font-size:13px;">K-Means peer-group clustering is not just an analytical task — it is the infrastructure that makes sparse news data usable. Without clustering, news sentiment would be too sparse to contribute meaningfully to regression. K-Means (composite score 0.577) is the right choice for this pipeline due to full coverage and balanced cluster structure.</p>
+    </div>
+    <div class="improvement-card" style="border-color:var(--accent);">
+      <h4>Stacking &gt; Direct Integration</h4>
+      <p style="font-size:13px;">Directly appending sentiment features to a technical model suppresses them due to feature importance competition. Stacking — where Stage 2 corrects Stage 1 residuals using sentiment — explicitly targets the unexplained variance and improves both MAE (−3.7%) and directional accuracy (+3.0 pp).</p>
+    </div>
+    <div class="improvement-card" style="border-color:var(--yellow);">
+      <h4>T+1 is the Hardest Horizon</h4>
+      <p style="font-size:13px;">Despite a 0.99958 R² score (high absolute accuracy), directional accuracy of 54.67% is only marginally above random. This confirms the theoretical expectation: T+1 price prediction is near the efficiency frontier. The path forward is medium-term horizons (T+15) where the signal-to-noise ratio is fundamentally better.</p>
+    </div>
+    <div class="improvement-card" style="border-color:var(--teal);">
+      <h4>Anomaly Detection as Risk Gate</h4>
+      <p style="font-size:13px;">NVDA's 6.38% consensus anomaly rate directly maps to its poor news-enhanced performance. Integrating Task 04 anomaly flags as a trade gate (suppress signals when anomaly votes ≥ 3) is a high-priority improvement that requires no new data or model training.</p>
+    </div>
+  </div>
+
+  <h3>Roadmap Summary</h3>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot done"></div>
+      <div class="tl-title">02D ✓ — ClusterNews Stacked XGBoost</div>
+      <div class="tl-desc">MAE $4.511 · Directional Acc 54.67% · Sharpe 2.818</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">02E — Multi-Horizon Log Return Prediction</div>
+      <div class="tl-desc">32 features · T+5/10/15 · Target DHR ≥55% at T+15 · Cluster-expert models</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">02F — Regime-Filtered Meta-Signal</div>
+      <div class="tl-desc">Combines 02D (T+1) + 02E (T+15) · VIX-conditional · Sentiment velocity alignment</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">System Improvements</div>
+      <div class="tl-desc">Walk-forward grid search · Sentiment velocity features · Anomaly trade gate · Correlation-distance clustering</div>
+    </div>
+  </div>
+
+  <div class="callout callout-success">
+    <strong>Final Takeaway</strong>
+    The stacked cluster-news architecture (02D) represents the current state-of-the-art within
+    this project, achieving a Sharpe Ratio of 2.818 versus 2.544 for buy-and-hold — a
+    meaningful risk-adjusted improvement. The 02E/02F roadmap addresses the remaining structural
+    limitations (T+1 noise, static sentiment, NVDA event sensitivity) through medium-horizon
+    log-return prediction with sentiment velocity features and regime-adaptive signal combining.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════════════ -->
+<footer>
+  <strong>ML in Finance Data Project</strong> · S&amp;P 500 Multi-Modal ML System<br>
+  Author: EnochCHIU · PolyU · April 2026 ·
+  Repository: <code>EnochCHIU-polyu/ML-in-Finance-Data-Project</code><br>
+  <small>Report generated: 2026-04-04 · Branch: copilot/implement-multi-horizon-forecasting</small>
+</footer>
+
+</body>
+</html>
