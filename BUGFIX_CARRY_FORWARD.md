@@ -30,8 +30,9 @@ for i, row in group.iterrows():  # i = original index label (e.g., 1258)
 ```
 
 When pandas does `groupby('Name').apply(func)`:
+
 1. Each group retains its original indices from the parent DataFrame
-2. `.iterrows()` yields *index labels*, not positions (e.g., `i=1258`)
+2. `.iterrows()` yields _index labels_, not positions (e.g., `i=1258`)
 3. Subtracting from the label (`i-j`) doesn't guarantee an existing label exists
 4. `.loc[i-j, ...]` fails with `KeyError` because that label doesn't exist
 
@@ -44,7 +45,7 @@ When pandas does `groupby('Name').apply(func)`:
 def apply_carry_forward(group, lookback_days=3, decay_factor=0.85):
     """Carry forward non-zero sentiment for up to lookback_days, with exponential decay."""
     group = group.reset_index(drop=True).copy()  # Step 1: Convert to position-based indexing
-    
+
     for pos in range(len(group)):  # Step 2: Loop over positions, not labels
         if group.iloc[pos]['raw_sentiment'] == 0.0:  # Step 3: Use .iloc for position-based access
             for j in range(1, lookback_days + 1):
@@ -59,29 +60,30 @@ def apply_carry_forward(group, lookback_days=3, decay_factor=0.85):
 
 ### Key Changes
 
-| Before | After | Reason |
-|--------|-------|--------|
-| `for i, row in group.iterrows()` | `for pos in range(len(group))` | Yields positions, not labels |
-| `group.loc[i-j, ...]` | `group.iloc[pos-j, ...]` | Position-based access |
-| `group.loc[i, 'raw_sentiment'] = value` | `group.iat[pos, col_index]` | Efficient position-based write |
-| ← | `group.reset_index(drop=True)` | Ensures clean 0-based indexing |
+| Before                                  | After                          | Reason                         |
+| --------------------------------------- | ------------------------------ | ------------------------------ |
+| `for i, row in group.iterrows()`        | `for pos in range(len(group))` | Yields positions, not labels   |
+| `group.loc[i-j, ...]`                   | `group.iloc[pos-j, ...]`       | Position-based access          |
+| `group.loc[i, 'raw_sentiment'] = value` | `group.iat[pos, col_index]`    | Efficient position-based write |
+| ←                                       | `group.reset_index(drop=True)` | Ensures clean 0-based indexing |
 
 ---
 
 ## API Clarification
 
-| Method | Purpose | When to Use |
-|--------|---------|------------|
-| `.loc[]` | **Label-based** indexing | Know the index label name (e.g., `df.loc[2026-04-05]`) |
-| `.iloc[]` | **Integer position** indexing | Know the row number (e.g., `df.iloc[0]` for first row) |
-| `.iat[]` | **Fast integer access** | Single value, known row & col position |
-| `.iterrows()` | Yields *(label, Series)* pairs | Iteration - ⚠️ Can cause bugs with `.loc[labelminus]` |
+| Method        | Purpose                        | When to Use                                            |
+| ------------- | ------------------------------ | ------------------------------------------------------ |
+| `.loc[]`      | **Label-based** indexing       | Know the index label name (e.g., `df.loc[2026-04-05]`) |
+| `.iloc[]`     | **Integer position** indexing  | Know the row number (e.g., `df.iloc[0]` for first row) |
+| `.iat[]`      | **Fast integer access**        | Single value, known row & col position                 |
+| `.iterrows()` | Yields _(label, Series)_ pairs | Iteration - ⚠️ Can cause bugs with `.loc[labelminus]`  |
 
 ---
 
 ## Verification
 
 The fix uses:
+
 - **`.reset_index(drop=True)`** → Creates new RangeIndex (0, 1, 2, ...)
 - **`.iloc[pos]`** → Read-only access by integer position (safe)
 - **`.iat[pos, col_idx]`** → Direct value assignment by position (fast & safe)
@@ -123,6 +125,7 @@ Non-zero sentiment rows in price_df: 126,455 / 283,410 (44.6%)
 ## Technical Details
 
 ### Before (Buggy)
+
 ```
 for i=[1258, 1259, ...]:
     if i-1 >= 0:  # Math on index labels
@@ -130,6 +133,7 @@ for i=[1258, 1259, ...]:
 ```
 
 ### After (Fixed)
+
 ```
 for pos=[0, 1, 2, ...]:  # After reset_index
     if pos-1 >= 0:  # Math guaranteed to yield valid positions
@@ -147,4 +151,3 @@ for pos=[0, 1, 2, ...]:  # After reset_index
 
 **Fixed by:** GitHub Copilot  
 **Date:** 2026-04-05 09:15 UTC
-
