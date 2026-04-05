@@ -1,5 +1,7 @@
 ﻿# Commit Improvement Logs (Newest First)
 
+- [20260404_0753](log_20260404_0753_deepreview.md): deep system review, 02E design spec, full HTML report
+- [20260403_1529](log_20260403_1529_analysis.md): analysis session — system audit & improvement plan
 - [bedfdc2](log_20260402_1943_bedfdc2.md): better version of using cluster news
 - [506e578](log_20260402_1925_506e578.md): Add news clustering 2D > 2C
 - [31fc107](log_20260402_1613_31fc107.md): using Auto-Tuned Lag+Decay for news weight
