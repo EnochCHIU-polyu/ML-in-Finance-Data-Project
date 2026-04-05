@@ -159,3 +159,31 @@ Combining T+1 (from 02D) and T+15 (from 02E) creates a **regime-filtered trading
 
 ## Extra Notes
 The HTML report (`PROJECT_FULL_REPORT.html`) is the primary deliverable. It includes all metric tables with real data, architecture diagrams in CSS/HTML, and a full 02E roadmap section. The report is designed for academic/professional submission.
+
+---
+
+## Addendum — 2026-04-05: 02E & 02F Jupyter Notebooks Created
+
+User requested actual working `.ipynb` implementations (not just documentation).
+
+### Files Created
+- `project_folder/02_stock_price_regression/implementation/02E_Multi_Horizon_Forecasting.ipynb`
+  - 25 cells (23 code, 2 markdown), 758 lines of Python
+  - Forward log return targets (T+5/T+10/T+15) with ±30% clipping
+  - 32 features: 24 inherited from 02C + 8 new (EMA200, EMA50, golden cross, sentiment velocity, sentiment acceleration, ADX-14, 52wk-high distance, Jegadeesh-Titman momentum)
+  - Global `MultiOutputRegressor(XGBRegressor)` + LightGBM alternative
+  - Cluster-aware training (one model per K-Means peer group)
+  - Full evaluation: MAE, RMSE, R², DHR, Sharpe, binomial significance test
+  - Output artifacts: 4 CSVs + 6 graphs
+
+- `project_folder/02_stock_price_regression/implementation/02F_Regime_Filtered_Signal.ipynb`
+  - 19 cells (17 code, 2 markdown), 709 lines of Python
+  - Loads 02D T+1 signal + 02E T+15 predictions
+  - VIX-conditional weighting (yfinance fetch + proxy fallback)
+  - Regime filter: discounts T+1 signal when T+15 disagrees strongly
+  - Sentiment velocity alignment filter
+  - Trained meta-learner: Ridge + XGBoost to learn optimal weights from data
+  - Full backtest: 5 strategies compared (T+1, T+15, Rule-Based Meta, Ridge Meta, XGB Meta)
+  - Per-stock + VIX-regime breakdown
+  - False breakout suppression analysis
+  - Output artifacts: 3 CSVs + 5 graphs
