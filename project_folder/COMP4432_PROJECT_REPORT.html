@@ -972,6 +972,85 @@
       />
     </div>
 
+    <h3>3.5 How 02B Cluster-Aware Regression Improves Prediction</h3>
+    <p>
+      The 02B notebook (
+      <code>02B_Cluster_Aware_Regression.ipynb</code>) is the first stage where
+      clustering is converted from an analysis output into a direct predictive
+      signal. Instead of using one global model only, 02B introduces
+      cluster-conditioned structure in three layers: (i) cluster and
+      market-state one-hot features are injected into the global regressor, (ii)
+      separate cluster-specific XGBoost experts are trained for each cluster,
+      and (iii) a validation-tuned blended predictor combines global and
+      cluster-specific outputs.
+    </p>
+    <p>
+      Mechanistically, this reduces cross-regime parameter conflict. A single
+      model must fit heterogeneous stocks with different volatility and momentum
+      signatures, while cluster-aware experts are trained on more homogeneous
+      peer subsets. This allows split thresholds and feature interactions to be
+      learned at the appropriate regime granularity, improving bias-variance
+      trade-off and reducing average point error.
+    </p>
+
+    <div class="eq-block">
+      \[ \hat{y}_{i,t+1}^{\text{blend}} = \alpha \cdot
+      \hat{y}_{i,t+1}^{\text{global+cluster}} + (1-\alpha) \cdot
+      \hat{y}_{i,t+1}^{\text{cluster-expert}}, \quad
+      \alpha=\arg\min_{a\in[0,1]}\text{MAE}_{\text{val}}(a) \]
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Table 4A. 02B Cluster-Aware Impact Summary (Notebook Internal
+          Comparison)
+        </caption>
+        <thead>
+          <tr>
+            <th class="l">02B Setup</th>
+            <th>MAE</th>
+            <th>Improvement vs 02B Baseline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l">Global Baseline</td>
+            <td>3.7405</td>
+            <td>0.00%</td>
+          </tr>
+          <tr>
+            <td class="l">Global + Cluster Features</td>
+            <td>3.4084</td>
+            <td>8.88%</td>
+          </tr>
+          <tr>
+            <td class="l">Cluster-Specific Models</td>
+            <td>2.5557</td>
+            <td>31.68%</td>
+          </tr>
+          <tr class="best">
+            <td class="l"><strong>Blended (Global + Cluster)</strong></td>
+            <td><strong>2.5557</strong></td>
+            <td><strong>31.68%</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      The 02B evidence shows that clustering contributes in two complementary
+      ways: feature-level context (global model with cluster indicators) and
+      model-level specialization (cluster experts). In practice, the major gain
+      comes from specialization, while the blended layer preserves robustness by
+      falling back to global structure when cluster-level signal is weak.
+    </p>
+    <p class="note">
+      Note: Table 4A is reported from the internal 02B experiment specification.
+      Numeric levels may differ from later 02C/02D sections due to different
+      feature sets, scaling conventions, and evaluation scope.
+    </p>
+
     <div class="pb"></div>
 
     <!-- ════════════════════  SECTION 4: INNOVATIONS  ════════════════════ -->
