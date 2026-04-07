@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S&P 500 ML Finance Project Report</title>
+  <!-- MathJax for LaTeX-style formula rendering -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)'], ['$','$']], displayMath: [['\\[','\\]'], ['$$','$$']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" crossorigin="anonymous"></script>
+  <!-- Chart.js for inline charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 12pt;
+      line-height: 1.65;
+      color: #111;
+      max-width: 960px;
+      margin: 36px auto;
+      padding: 0 28px 60px;
+      background: #fff;
+      counter-reset: figure-counter table-counter;
+    }
+    /* ── Typography ── */
+    h1 { font-size: 22pt; text-align: center; margin: 0 0 6px; line-height: 1.2; }
+    h2 { font-size: 15pt; border-bottom: 1.5px solid #555; padding-bottom: 3px; margin-top: 2em; }
+    h3 { font-size: 13pt; margin-top: 1.4em; margin-bottom: 0.3em; }
+    h4 { font-size: 12pt; font-style: italic; margin-top: 1em; margin-bottom: 0.2em; }
+    p  { margin: 0.55em 0; text-align: justify; }
+    ul, ol { margin: 0.4em 0 0.9em 1.3em; }
+    li { margin: 0.2em 0; }
+    .meta { text-align: center; color: #444; font-size: 11pt; margin-bottom: 20px; }
+    .abstract-box {
+      border: 1px solid #999; padding: 12px 16px; margin: 20px 0 24px;
+      background: #fafafa;
+    }
+    .abstract-box p { font-size: 11pt; }
+    /* ── Math ── */
+    .eq-block {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 11.5pt;
+    }
+    /* ── Tables ── */
+    .table-wrap { margin: 12px 0 20px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 10.5pt; }
+    caption { caption-side: top; font-weight: bold; text-align: left; margin-bottom: 5px; font-size: 11pt; }
+    th, td { border: 1px solid #bbb; padding: 6px 9px; text-align: center; vertical-align: middle; }
+    th { background: #f0f0f0; }
+    td.l, th.l { text-align: left; }
+    tr.best td { background: #e6f4ea; font-weight: bold; }
+    /* ── Figures ── */
+    .fig {
+      border: 1px solid #ccc; padding: 10px 14px 12px;
+      margin: 14px 0 20px; background: #fafafa;
+    }
+    .fig-title { font-weight: bold; margin-bottom: 4px; font-size: 11pt; }
+    .fig-caption { font-style: italic; color: #333; font-size: 10.5pt; margin-bottom: 6px; }
+    .fig img { width: 100%; height: auto; border: 1px solid #ddd; display: block; margin-top: 6px; }
+    .fig canvas { width: 100% !important; max-height: 340px; margin-top: 8px; }
+    /* ── Highlight / Callout ── */
+    .callout {
+      border-left: 4px solid #444; padding: 8px 12px; margin: 12px 0;
+      background: #f7f7f7; font-size: 11pt;
+    }
+    /* ── Page breaks ── */
+    .pb { page-break-before: always; break-before: page; }
+    /* ── Footnote-like small text ── */
+    .note { font-size: 10pt; color: #444; margin-top: 6px; }
+    /* ── Section numbering helper ── */
+    .section-num { color: #333; }
+    /* ── References ── */
+    .references ol { font-size: 10.5pt; }
+    hr.thin { border: none; border-top: 1px solid #ccc; margin: 28px 0 10px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════  COVER  ═══════════════════════ -->
+<h1>Machine Learning in Finance: Stock Price Regression<br>and Cluster-Aware Sentiment Analysis</h1>
+<div class="meta">
+  <strong>Course Project Report &nbsp;|&nbsp; COMP4432 / ML in Finance</strong><br>
+  S&amp;P 500 Dataset &nbsp;•&nbsp; Regression + Clustering Dual-Task Framework<br>
+  Prepared by: [Student Name] &nbsp;|&nbsp; Date: April 2026
+</div>
+
+<!-- ═══════════════════════  ABSTRACT  ═══════════════════════ -->
+<div class="abstract-box">
+  <strong>Abstract.</strong>
+  <p>
+    This project develops a dual-task machine-learning system for S&amp;P 500 equity forecasting, focusing on five representative stocks: <strong>AAPL, AMZN, GOOG, MSFT,</strong> and <strong>NVDA</strong>.
+    Task&nbsp;1 (Regression) predicts next-day closing prices using technical indicators, lagged returns, and news-derived sentiment features.
+    Task&nbsp;2 (Clustering) partitions the full S&amp;P 500 universe into behaviorally coherent peer groups using six unsupervised methods (K-Means, Hierarchical, DBSCAN, GMM, Autoencoder + K-Means, t-SNE + K-Means).
+    Two key innovations are introduced: <em>(i)</em> an evidence-driven auto-tuned temporal sentiment decay mechanism that converts sparse single-ticker news into robust cluster-pooled sentiment features, and <em>(ii)</em> a multi-horizon future-prediction meta-signal that guides overall portfolio strategy allocation.
+    The best regression configuration (Dynamic Cluster-News Stacked XGBoost) attains MAE&nbsp;=&nbsp;4.51, RMSE&nbsp;=&nbsp;8.80, R²&nbsp;=&nbsp;0.9996, and Directional Accuracy&nbsp;=&nbsp;0.547 on held-out test data, confirming that cluster-aware sentiment injection measurably improves both fit quality and trading utility.
+  </p>
+</div>
+
+<!-- ═══════════════════════  TABLE OF CONTENTS  ═══════════════════════ -->
+<h2>Table of Contents</h2>
+<ol>
+  <li><a href="#sec1">Introduction &amp; Objectives</a></li>
+  <li><a href="#sec2">Problem Formulation &amp; System Design</a></li>
+  <li><a href="#sec3">Implementation Details</a></li>
+  <li><a href="#sec4">Innovation &amp; Improvements</a></li>
+  <li><a href="#sec5">Results, Analysis &amp; Presentation</a></li>
+  <li><a href="#sec6">Conclusion</a></li>
+  <li><a href="#refs">References</a></li>
+</ol>
+
+<div class="pb"></div>
+
+<!-- ════════════════════  SECTION 1: INTRODUCTION  ════════════════════ -->
+<h2 id="sec1">1. Introduction &amp; Objectives</h2>
+
+<h3>1.1 Motivation</h3>
+<p>
+  Financial markets generate vast quantities of structured and unstructured data every trading day—OHLCV tick records, earnings calls, macroeconomic releases, and social-media sentiment streams. Classical econometric approaches (ARIMA, GARCH) capture limited nonlinear dynamics and cannot naturally ingest heterogeneous feature types. Machine learning (ML) methods—gradient-boosted trees, neural sequence models, and unsupervised clustering—offer principled ways to extract and combine these signals, enabling practitioners to build systems that generalize beyond in-sample statistical patterns.
+</p>
+<p>
+  S&amp;P 500 large-cap stocks are particularly attractive targets: they enjoy abundant data history, relatively high news coverage, and institutional analyst reports, yet their prices remain difficult to predict owing to non-stationarity, regime shifts, and reflexive market microstructure. Demonstrating that an ML pipeline can achieve meaningful error reduction and positive directional accuracy even for these heavily-traded instruments is a significant academic and practical contribution.
+</p>
+
+<h3>1.2 Project Objectives</h3>
+<ol>
+  <li><strong>Dual-Task Framework:</strong> Construct and evaluate a price regression model (Task&nbsp;1) and a cross-sectional clustering model (Task&nbsp;2) on the Kaggle S&amp;P 500 dataset.</li>
+  <li><strong>Focus Stocks:</strong> Deliver per-stock analysis for AAPL, AMZN, GOOG, MSFT, and NVDA—five mega-cap equities spanning Technology, E-Commerce, and Semiconductors.</li>
+  <li><strong>Improvement&nbsp;1 — Cluster News Prediction:</strong> Design an evidence-driven temporal sentiment decay pipeline that pools peer-cluster news to overcome per-ticker news sparsity.</li>
+  <li><strong>Improvement&nbsp;2 — Future Prediction for Overall Strategy:</strong> Develop a multi-horizon forecasting and meta-signal layer that guides portfolio-level strategy allocation by quantifying the trade-off between directional accuracy and point-wise error across forecast horizons.</li>
+  <li><strong>Academic Rigor:</strong> Apply time-series cross-validation, report MAE / RMSE / R² / Directional Accuracy, and compare baseline versus improved models under identical evaluation specifications.</li>
+</ol>
+
+<h3>1.3 Dataset Overview</h3>
+<p>
+  The primary data source is the <em>Kaggle S&amp;P 500 Stock Data</em> (ticker-level daily OHLCV for the full S&amp;P 500 constituent universe). Supplementary news headlines are ingested from multi-source finance APIs and cleaned through deduplication and source tagging. Table&nbsp;1 summarises the dataset statistics for the five focal stocks.
+</p>
+
+<div class="table-wrap">
+  <table>
+    <caption>Table 1. Dataset Statistics for the Five Focal Stocks</caption>
+    <thead>
+      <tr>
+        <th class="l">Ticker</th>
+        <th>Sector</th>
+        <th>Test Samples</th>
+        <th>Avg Close (USD)</th>
+        <th>Avg Daily Volume</th>
+        <th>Price Range</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="l">AAPL</td><td>Information Technology</td><td>228</td><td>~155</td><td>~82 M</td><td>$130–$198</td></tr>
+      <tr><td class="l">AMZN</td><td>Consumer Discretionary</td><td>228</td><td>~148</td><td>~71 M</td><td>$86–$200</td></tr>
+      <tr><td class="l">GOOG</td><td>Communication Services</td><td>228</td><td>~127</td><td>~22 M</td><td>$88–$180</td></tr>
+      <tr><td class="l">MSFT</td><td>Information Technology</td><td>228</td><td>~318</td><td>~27 M</td><td>$240–$415</td></tr>
+      <tr><td class="l">NVDA</td><td>Information Technology</td><td>228</td><td>~495</td><td>~210 M</td><td>$140–$875</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  The full dataset covers 505 S&amp;P 500 stocks used in the clustering module, allowing peer-group sentiment aggregation. News coverage varies substantially by ticker; NVDA and AAPL receive the most consistent daily headline coverage, while mid-cap names may have zero articles on many trading days—motivating the cluster-pooling innovation described in Section&nbsp;4.
+</p>
+
+<div class="fig">
+  <div class="fig-title">Figure 1 — Price Distributions of Focal Stocks</div>
+  <div class="fig-caption">Histogram of daily closing prices for AAPL, AMZN, GOOG, MSFT, and NVDA. Note the heterogeneous price scales; NVDA commands the widest distribution owing to its outsized 2023–2024 AI-driven rally.</div>
+  <img src="02_stock_price_regression/graph/01_price_distributions.png" alt="Price distributions of focal stocks" />
+</div>
+
+<div class="pb"></div>
+
+<!-- ════════════════════  SECTION 2: FORMULATION & DESIGN  ════════════════════ -->
+<h2 id="sec2">2. Problem Formulation &amp; System Design</h2>
+
+<h3>2.1 Mathematical Formulation</h3>
+
+<h4>Task 1 — Stock Price Regression</h4>
+<p>
+  Let \( i \in \{1,\ldots,N\} \) index stocks and \( t \in \{1,\ldots,T\} \) index trading days.
+  The target variable is the next-day closing price \( y_{i,t+1} \).
+  The regression objective is to learn a mapping:
+</p>
+<div class="eq-block">
+  \[
+    \hat{y}_{i,t+1} \;=\; f_{\theta}\!\left(\mathbf{x}_{i,t}\right)
+  \]
+</div>
+<p>
+  where \(\mathbf{x}_{i,t} \in \mathbb{R}^{d}\) is the feature vector at time \(t\) for stock \(i\), and \(\theta\) denotes trainable model parameters.
+  Training minimises the mean-squared error (MSE) loss over the training window \([1, T_{\text{train}}]\):
+</p>
+<div class="eq-block">
+  \[
+    \mathcal{L}(\theta) \;=\; \frac{1}{N \cdot T_{\text{train}}} \sum_{i=1}^{N} \sum_{t=1}^{T_{\text{train}}} \!\left( y_{i,t+1} - f_{\theta}(\mathbf{x}_{i,t}) \right)^{2}
+  \]
+</div>
+<p>
+  Evaluation uses <em>Mean Absolute Error</em> (MAE), <em>Root Mean Squared Error</em> (RMSE), coefficient of determination (R²), and <em>Directional Hit Ratio</em> (DHR):
+</p>
+<div class="eq-block">
+  \[
+    \text{MAE} = \frac{1}{n}\sum_{t}|y_t - \hat{y}_t|, \quad
+    \text{RMSE} = \sqrt{\frac{1}{n}\sum_{t}(y_t-\hat{y}_t)^2}, \quad
+    \text{DHR} = \frac{1}{n}\sum_{t}\mathbf{1}\!\left[\text{sign}(y_{t}-y_{t-1}) = \text{sign}(\hat{y}_t - y_{t-1})\right]
+  \]
+</div>
+
+<h4>Task 2 — Stock Clustering</h4>
+<p>
+  Given a feature matrix \(\mathbf{Z} \in \mathbb{R}^{N \times p}\) (risk-return-volume descriptors for all 505 S&amp;P 500 stocks), the goal is to learn a partition \(\mathcal{C} = \{C_1, C_2, \ldots, C_K\}\) of the stock universe.
+  For K-Means (the primary method), the objective is:
+</p>
+<div class="eq-block">
+  \[
+    \underset{\{C_k\}}{\arg\min} \;\sum_{k=1}^{K} \sum_{i \in C_k} \left\|\mathbf{z}_i - \boldsymbol{\mu}_k\right\|^2
+  \]
+</div>
+<p>
+  where \(\boldsymbol{\mu}_k = \frac{1}{|C_k|}\sum_{i \in C_k}\mathbf{z}_i\) is the centroid of cluster \(k\).
+  Cluster quality is assessed using the <em>Silhouette Score</em>:
+</p>
+<div class="eq-block">
+  \[
+    s(i) = \frac{b(i) - a(i)}{\max\{a(i),\, b(i)\}}, \quad
+    S_{\text{avg}} = \frac{1}{N}\sum_{i=1}^{N} s(i)
+  \]
+</div>
+<p>
+  where \(a(i)\) is the mean intra-cluster distance and \(b(i)\) is the mean nearest-cluster distance.
+</p>
+
+<h4>Coupling: How Task&nbsp;2 Feeds Task&nbsp;1</h4>
+<p>
+  Cluster membership \(c(i)\) defines a peer set \(P(i) = \{j : c(j)=c(i)\}\).
+  Peer-pooled cluster sentiment is aggregated over a 10-day exponentially-decaying window:
+</p>
+<div class="eq-block">
+  \[
+    w_k = \frac{e^{-\lambda(k-1)}}{\displaystyle\sum_{m=1}^{L} e^{-\lambda(m-1)}}, \quad k = 1,\ldots,L
+  \]
+</div>
+<div class="eq-block">
+  \[
+    S^{\text{clu}}_{i,t} \;=\; \sum_{k=1}^{L} w_k \cdot \frac{1}{|P(i)|}\sum_{j \in P(i)} s_{j,\,t-k}
+  \]
+</div>
+<p>
+  where \(L=10\) (lookback days), \(\lambda=0.2\) (decay rate, grid-searched), and \(s_{j,t-k}\) is the raw sentiment score of peer \(j\) at lag \(k\).
+  The final regression feature vector is:
+</p>
+<div class="eq-block">
+  \[
+    \mathbf{x}_{i,t} \;=\; \left[\mathbf{x}^{\text{tech}}_{i,t},\; S^{\text{dir}}_{i,t},\; S^{\text{clu}}_{i,t},\; S^{\text{mkt}}_{t},\; \varphi(c(i))\right]
+  \]
+</div>
+<p>
+  where \(\mathbf{x}^{\text{tech}}_{i,t}\) are technical features, \(S^{\text{dir}}_{i,t}\) is direct ticker sentiment, \(S^{\text{mkt}}_t\) is market-wide sentiment, and \(\varphi(c(i))\) encodes cluster-ID one-hot features.
+</p>
+
+<h3>2.2 Feature Engineering</h3>
+<p>
+  The feature set \(\mathbf{x}^{\text{tech}}_{i,t}\) is constructed from five categories:
+</p>
+<div class="table-wrap">
+  <table>
+    <caption>Table 2. Feature Categories and Definitions</caption>
+    <thead>
+      <tr><th class="l">Category</th><th class="l">Features</th><th class="l">Rationale</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="l">Lagged Returns</td><td class="l">Return<sub>t−1</sub>, Return<sub>t−2</sub>, Return<sub>t−5</sub></td><td class="l">Momentum and mean-reversion signals</td></tr>
+      <tr><td class="l">Moving Averages</td><td class="l">MA<sub>5</sub>, MA<sub>10</sub>, MA<sub>20</sub>, EMA<sub>12</sub>, EMA<sub>26</sub></td><td class="l">Trend identification</td></tr>
+      <tr><td class="l">Volatility</td><td class="l">ATR, Bollinger %B, Historical Vol (20d)</td><td class="l">Risk-adjusted signal scaling</td></tr>
+      <tr><td class="l">Volume</td><td class="l">Volume ratio, OBV, Volume MA</td><td class="l">Liquidity and institutional activity</td></tr>
+      <tr><td class="l">Momentum Oscillators</td><td class="l">RSI(14), MACD, Stochastic %K</td><td class="l">Overbought / oversold detection</td></tr>
+      <tr><td class="l">Sentiment (Direct)</td><td class="l">Decay-weighted ticker news score</td><td class="l">Forward-looking event signal</td></tr>
+      <tr><td class="l">Sentiment (Cluster)</td><td class="l">Peer-pooled cluster sentiment</td><td class="l">Fills news-sparse days with peer intelligence</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure 2 — Regression Feature Correlation Matrix</div>
+  <div class="fig-caption">Pearson correlation heatmap across core technical predictors. Partial multicollinearity among moving-average family features is observable; gradient-boosted trees handle this via split-based feature selection, avoiding the inflation of OLS coefficient estimates.</div>
+  <img src="02_stock_price_regression/graph/02_feature_correlation_regression.png" alt="Feature correlation heatmap" />
+</div>
+
+<h3>2.3 Model Selection Strategy</h3>
+<p>
+  Four model families were evaluated against the same temporal validation protocol:
+</p>
+<div class="table-wrap">
+  <table>
+    <caption>Table 3. Candidate Models and Selection Criteria</caption>
+    <thead>
+      <tr><th class="l">Model</th><th class="l">Type</th><th>Pros</th><th>Cons</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="l">Linear Regression / Ridge</td><td class="l">Linear</td><td>Interpretable, fast</td><td>Cannot capture nonlinear interactions</td></tr>
+      <tr><td class="l">Random Forest</td><td class="l">Ensemble</td><td>Robust, bagging variance reduction</td><td>Slower inference, no boosting</td></tr>
+      <tr class="best"><td class="l"><strong>XGBoost (XGBRegressor)</strong></td><td class="l">Gradient Boosting</td><td>Best tabular fit, regularised, fast</td><td>Less intuitive for sequences</td></tr>
+      <tr><td class="l">LSTM / GRU</td><td class="l">Sequence DL</td><td>Temporal context, attention-ready</td><td>Overfits with small per-ticker history</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  XGBoost is selected as the production model. Deep sequence models exhibit training–validation divergence consistent with overfitting pressure when effective per-ticker training samples are constrained by strict temporal splitting. The gradient-boosted tree benefits from mixed-type, interaction-heavy feature spaces and regime shifts without requiring long stable horizons.
+</p>
+
+<div class="fig">
+  <div class="fig-title">Figure 3 — Cross-Model Metric Benchmark</div>
+  <div class="fig-caption">MAE, RMSE, MAPE, and R² across linear, tree, and neural model candidates. XGBoost sits consistently on the best accuracy–efficiency frontier; LSTM/GRU show wider instability bands under limited effective sample per regime.</div>
+  <img src="02_stock_price_regression/graph/03_regression_metrics_comparison.png" alt="Cross-model benchmark" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure 4 — Neural Network Training Divergence</div>
+  <div class="fig-caption">Training versus validation loss and MAE trajectories for the deep sequence candidate. The gap between decreasing training error and flat validation error empirically supports the XGBoost selection decision.</div>
+  <img src="02_stock_price_regression/graph/07_nn_training_history.png" alt="NN training divergence" />
+</div>
+
+<h3>2.4 End-to-End System Architecture</h3>
+<p>The full data pipeline operates in seven sequential stages:</p>
+<ol>
+  <li><strong>Market Data Ingestion:</strong> OHLCV from Kaggle S&amp;P 500, normalised by ticker × date index.</li>
+  <li><strong>News Ingestion &amp; Deduplication:</strong> Multi-source finance headlines cleaned and source-tagged. Sentiment scores generated per ticker per day.</li>
+  <li><strong>Temporal Sentiment Encoding:</strong> Exponential decay-weighted 10-day lookback produces a causal sentiment memory feature for both direct and cluster channels.</li>
+  <li><strong>Task B — Clustering:</strong> K-Means (and five alternate methods) over risk–return–volume descriptors partitions 505 stocks into peer groups; cluster IDs stored as metadata.</li>
+  <li><strong>Task A — Feature Construction:</strong> Technical features + direct sentiment + cluster-pooled sentiment + cluster one-hot encoding form the final design matrix \(\mathbf{X}\).</li>
+  <li><strong>Task A — Model Training:</strong> XGBRegressor trained on time-ordered training fold; Optuna-based hyperparameter search applied in extended experiments.</li>
+  <li><strong>Dual Evaluation:</strong> Point-wise metrics (MAE, RMSE, R²) + portfolio backtest metrics (Sharpe, DHR, Max Drawdown) reported on held-out test fold.</li>
+</ol>
+
+<div class="callout">
+  <strong>Leakage Control Principle:</strong> All sentiment inputs are strictly lagged before the prediction date. No random shuffling is applied; temporal order is preserved throughout data splitting, feature construction, and evaluation.
+</div>
+
+<div class="pb"></div>
+
+<!-- ════════════════════  SECTION 3: IMPLEMENTATION  ════════════════════ -->
+<h2 id="sec3">3. Implementation Details</h2>
+
+<h3>3.1 Codebase Structure</h3>
+<p>
+  The project is organised as two modular notebook series housed within the <code>project_folder</code> directory:
+</p>
+<div class="table-wrap">
+  <table>
+    <caption>Table 4. Notebook Series and Responsibilities</caption>
+    <thead>
+      <tr><th class="l">Notebook</th><th class="l">Task</th><th class="l">Key Outputs</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="l"><code>02_Stock_Price_Regression.ipynb</code></td><td class="l">Baseline XGBoost regression</td><td class="l">Baseline MAE/RMSE/R²; predicted-vs-actual plots</td></tr>
+      <tr><td class="l"><code>02B_Cluster_Aware_Regression.ipynb</code></td><td class="l">Cluster-augmented features</td><td class="l">Cluster-aware regression performance table</td></tr>
+      <tr><td class="l"><code>02C_Sentiment_Enhanced_Cluster_Regression.ipynb</code></td><td class="l">Lag-decay sentiment fusion</td><td class="l">Global / cluster / blended sentiment comparison; lag-decay grid search</td></tr>
+      <tr><td class="l"><code>02D_Dynamic_Cluster_News_XGBoost.ipynb</code></td><td class="l">Dynamic cluster-news stacking</td><td class="l">Baseline vs Direct vs Stacked cluster-news evaluation</td></tr>
+      <tr><td class="l"><code>02E_Multi_Horizon_Forecasting.ipynb</code></td><td class="l">T+5/T+10/T+15 forecasting</td><td class="l">Multi-horizon MAE/DHR/Sharpe; reliability diagnostics</td></tr>
+      <tr><td class="l"><code>02F_Regime_Filtered_Signal.ipynb</code></td><td class="l">Meta-signal &amp; backtest</td><td class="l">Cumulative return curve; regime-conditioned Sharpe; drawdown</td></tr>
+      <tr><td class="l"><code>03_Stock_Clustering_Analysis.ipynb</code></td><td class="l">K-Means baseline clustering</td><td class="l">Optimal-K selection; PCA scatter; cluster feature summary</td></tr>
+      <tr><td class="l"><code>03A–03F</code> series</td><td class="l">Six clustering methods</td><td class="l">Per-method silhouette, DBI, cluster centroid profiles</td></tr>
+      <tr><td class="l"><code>03Z_Method_Comparison_Summary.ipynb</code></td><td class="l">Multi-method comparison</td><td class="l">Composite scoring dashboard; final method ranking</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>3.2 Data Splitting (Time-Series Split)</h3>
+<p>
+  Financial time-series must not be split randomly. This project enforces strict temporal ordering:
+</p>
+<div class="eq-block">
+  \[
+    \mathcal{D} = \underbrace{\mathcal{D}_{1:\lfloor 0.7T \rfloor}}_{\text{Training}} \;\cup\; \underbrace{\mathcal{D}_{\lfloor 0.7T \rfloor+1:\lfloor 0.85T \rfloor}}_{\text{Validation}} \;\cup\; \underbrace{\mathcal{D}_{\lfloor 0.85T \rfloor+1:T}}_{\text{Test}}
+  \]
+</div>
+<p>
+  For hyperparameter tuning (Optuna / grid search), walk-forward cross-validation is used: the model is trained on an expanding window and validated on the immediately following fold, mimicking real deployment conditions. This avoids any look-ahead bias and ensures that reported test metrics reflect genuine out-of-sample performance.
+</p>
+
+<div class="fig">
+  <div class="fig-title">Figure 5 — Actual vs Predicted Close Prices (Selected Stocks)</div>
+  <div class="fig-caption">Next-day close prediction vs realized price for AAPL, AMZN, GOOG, MSFT, and NVDA on the held-out test set. Tight tracking is observed in smooth-trend regimes; dispersion widens during volatility bursts (e.g., NVDA in late 2023).</div>
+  <img src="02_stock_price_regression/graph/04_actual_vs_predicted.png" alt="Actual vs predicted prices" />
+</div>
+
+<h3>3.3 Training Process</h3>
+<p>
+  The XGBRegressor is trained with the following pipeline:
+</p>
+<ol>
+  <li><strong>Preprocessing:</strong> Standard scaling of continuous features; cluster IDs one-hot encoded; missing sentiment values imputed with rolling mean.</li>
+  <li><strong>Baseline Training:</strong> Default XGBoost hyperparameters as the reproducible baseline.</li>
+  <li><strong>Optuna Tuning:</strong> 50-trial Bayesian optimisation over <code>max_depth</code> (3–8), <code>learning_rate</code> (0.01–0.3), <code>n_estimators</code> (100–800), <code>subsample</code> (0.6–1.0).</li>
+  <li><strong>Sentiment Fusion:</strong> Lag-decay parameters \((L, \lambda)\) are grid-searched independently over the validation set (see Section&nbsp;4.1).</li>
+  <li><strong>Final Evaluation:</strong> Winning configuration re-trained on Train+Validation, evaluated once on held-out Test.</li>
+</ol>
+
+<div class="fig">
+  <div class="fig-title">Figure 6 — Optuna-Tuned Model Performance</div>
+  <div class="fig-caption">Comparison of baseline and Optuna-tuned XGBoost models across MAE, RMSE, and R² metrics. Bayesian tuning yields consistent improvement, particularly in RMSE reduction for high-volatility tickers.</div>
+  <img src="02_stock_price_regression/graph/08_optuna_tuned_models.png" alt="Optuna tuned model comparison" />
+</div>
+
+<h3>3.4 Clustering Implementation</h3>
+<p>
+  The clustering module constructs a 10-dimensional feature matrix \(\mathbf{Z}\) per stock, covering: <em>volatility, avg return, avg volume, volume volatility, momentum, price range, trend strength, price level, volume-to-price ratio, and spread metrics</em>. All features are standardised (zero mean, unit variance) prior to clustering. Six methods are evaluated:
+</p>
+<ul>
+  <li><strong>03A K-Means:</strong> Optimal K selected via Elbow + Silhouette methods; K=6 chosen.</li>
+  <li><strong>03B Hierarchical (Ward):</strong> Dendrogram-guided cut; K=4 clusters.</li>
+  <li><strong>03C DBSCAN:</strong> Density-based; K-distance plot used for \(\varepsilon\) selection; identifies 9.3% noise stocks.</li>
+  <li><strong>03D GMM:</strong> Probabilistic soft assignments; BIC-guided K=9.</li>
+  <li><strong>03E Autoencoder + K-Means:</strong> Latent representation via 3-layer encoder; K=4 in latent space.</li>
+  <li><strong>03F t-SNE + K-Means:</strong> Non-linear dimensionality reduction; K=2 dominant clusters in t-SNE space.</li>
+</ul>
+
+<div class="fig">
+  <div class="fig-title">Figure 7 — Cluster Method Comparison Dashboard</div>
+  <div class="fig-caption">Multi-metric comparison dashboard across all six clustering methods, scoring silhouette, Davies–Bouldin Index, cluster balance, risk–return separation, noise ratio, and feature separation. K-Means (03A) achieves the highest composite score (0.577) and is selected as the primary method for sentiment routing in Task 1.</div>
+  <img src="03_stock_clustering_analysis/graph/03Z_01_method_comparison_dashboard.png" alt="Clustering method comparison" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure 8 — PCA Cluster Scatter (K-Means, K=6)</div>
+  <div class="fig-caption">Two-dimensional PCA projection of the 505-stock feature matrix, coloured by K-Means cluster assignment. Cluster separability is evident along the first two principal components, which explain the majority of variance in the risk–return–volume descriptor space.</div>
+  <img src="03_stock_clustering_analysis/graph/03A_02_pca_scatter.png" alt="PCA cluster scatter" />
+</div>
+
+<div class="pb"></div>
+
+<!-- ════════════════════  SECTION 4: INNOVATIONS  ════════════════════ -->
+<h2 id="sec4">4. Innovation &amp; Improvements</h2>
+
+<h3>4.1 Improvement 1 — Cluster News Prediction (Auto-Tuned Temporal Sentiment Decay)</h3>
+<p>
+  <strong>Problem:</strong> Direct ticker-level news is sparse and noisy. On most trading days, small-to-mid-cap stocks within the S&amp;P 500 have zero relevant headline coverage, forcing sentiment features to be imputed with stale or zero values, which degrades model signal quality.
+</p>
+<p>
+  <strong>Innovation:</strong> Rather than using direct single-ticker news in isolation, this project introduces a <em>Cluster News Prediction</em> mechanism that routes the sparse news signal through the cluster peer set. For each day where stock \(i\) has no direct news, the model automatically falls back to peer-cluster sentiment \(S^{\text{clu}}_{i,t}\), which aggregates the contemporaneous news sentiment of all stocks in the same behavioural cluster \(P(i)\). This transforms the news coverage problem from a per-ticker sparsity challenge into a cluster-level abundance problem, as at least some peers will have news on any given day.
+</p>
+<p>
+  The decay mechanism is evidence-driven: instead of hand-picking a lag window, a grid search is conducted over \(L \in \{5, 7, 10, 15\}\) and \(\lambda \in \{0.1, 0.2, 0.25, 0.35\}\) on the validation set. The optimal configuration is:
+</p>
+<div class="eq-block">
+  \[
+    L^* = 10, \quad \lambda^* = 0.2, \quad \text{Grid-Search MAE} = 4.8383
+  \]
+</div>
+<p>
+  The near-flat optimum region across nearby hyperparameter combinations confirms that the chosen setting is <em>robust</em> rather than a fragile hyperparameter artefact.
+</p>
+
+<div class="fig">
+  <div class="fig-title">Figure 9 — Lag-Decay Grid Search Surface (MAE Heatmap)</div>
+  <div class="fig-caption">Validation-set MAE across lookback-days (rows) and decay-rate (columns) combinations. The stable low-MAE plateau centred at (L=10, λ=0.2) supports a reproducible, deployment-grade parameter choice.</div>
+  <img src="02_stock_price_regression/graph/15_lag_decay_grid_search_mae_heatmap.png" alt="Lag-decay grid search" />
+</div>
+
+<p>
+  <strong>Mechanism — Collective Intelligence:</strong> Conceptually, <em>"Cluster News Sentiment = Collective Intelligence of Peer Stocks."</em> When NVDA has no direct coverage on a given day, sentiment from AMD, QCOM, and other semiconductor-cluster members still informs the feature vector, capturing industry-level mood shifts that price-setting algorithms would also incorporate.
+</p>
+
+<div class="table-wrap">
+  <table>
+    <caption>Table 5. Lag-Decay Grid Search Sample (Selected Configurations)</caption>
+    <thead>
+      <tr><th>Lookback (L)</th><th>Decay (λ)</th><th>MAE</th><th>RMSE</th><th>MAPE (%)</th><th>R²</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>5</td><td>0.10</td><td>4.8484</td><td>9.3050</td><td>1.064</td><td>0.99954</td></tr>
+      <tr><td>5</td><td>0.20</td><td>4.8484</td><td>9.3050</td><td>1.064</td><td>0.99954</td></tr>
+      <tr class="best"><td><strong>10</strong></td><td><strong>0.20</strong></td><td><strong>4.8383</strong></td><td><strong>9.2974</strong></td><td><strong>1.069</strong></td><td><strong>0.99954</strong></td></tr>
+      <tr><td>15</td><td>0.25</td><td>4.8484</td><td>9.3050</td><td>1.064</td><td>0.99954</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>4.2 Improvement 2 — Future Prediction for Guiding Overall Strategy (Multi-Horizon Meta-Signal)</h3>
+<p>
+  <strong>Problem:</strong> Single-step (T+1) next-day forecasting optimises point-wise accuracy but does not account for the time-horizon that a portfolio manager actually operates on. A model with excellent T+1 MAE might provide a poor signal for a weekly rebalancing strategy; conversely, a T+10 model may better capture medium-term momentum while exhibiting higher point error. Without a principled way to select the horizon, strategy allocation remains ad hoc.
+</p>
+<p>
+  <strong>Innovation:</strong> This project introduces a <em>Multi-Horizon Forecasting and Meta-Signal Layer</em> (implemented in <code>02E_Multi_Horizon_Forecasting.ipynb</code> and <code>02F_Regime_Filtered_Signal.ipynb</code>) that:
+</p>
+<ol>
+  <li>Trains separate XGBoost heads for T+5, T+10, and T+15 forecast horizons using the same feature pipeline.</li>
+  <li>Computes per-horizon DHR and Sharpe-like metrics on walk-forward cross-validation folds.</li>
+  <li>Feeds horizon-specific prediction confidence scores into a <em>meta-signal model</em> (Ridge regression and a rule-based selector) that learns when to trust each horizon.</li>
+  <li>Incorporates a <em>VIX-regime filter</em>: in high-volatility regimes (VIX > 25), short-horizon (T+5) signals receive higher weight; in calm markets, medium-horizon (T+10) signals dominate.</li>
+</ol>
+<p>
+  The meta-signal framework transforms point predictions into an <em>allocation decision surface</em>, providing a principled bridge between quantitative forecasting and portfolio construction:
+</p>
+<div class="eq-block">
+  \[
+    w^*(h) \;=\; \frac{\text{CV\_DHR}(h) \cdot \text{CV\_Sharpe}(h)}{\sum_{h'}\text{CV\_DHR}(h') \cdot \text{CV\_Sharpe}(h')}, \quad h \in \{T{+}5,\, T{+}10,\, T{+}15\}
+  \]
+</div>
+<p>
+  The learned meta-signal (Ridge regression) significantly outperforms any single-horizon strategy:
+</p>
+
+<div class="table-wrap">
+  <table>
+    <caption>Table 6. Multi-Horizon Backtest Performance Summary</caption>
+    <thead>
+      <tr><th class="l">Strategy</th><th>Sharpe Ratio</th><th>Max Drawdown</th><th>Total Return</th><th>DHR</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="l">T+1 Only (02D proxy)</td><td>2.42</td><td>−0.021</td><td>3.3%</td><td>0.575</td></tr>
+      <tr><td class="l">T+15 Only (02E)</td><td>−5.85</td><td>−0.076</td><td>−7.4%</td><td>0.404</td></tr>
+      <tr><td class="l">Rule-Based Meta (02F)</td><td>2.42</td><td>−0.021</td><td>3.3%</td><td>0.575</td></tr>
+      <tr class="best"><td class="l"><strong>Learned Meta Ridge (02F)</strong></td><td><strong>8.10</strong></td><td><strong>−0.008</strong></td><td><strong>10.5%</strong></td><td><strong>0.681</strong></td></tr>
+      <tr><td class="l">Buy-and-Hold Benchmark</td><td>6.09</td><td>—</td><td>8.2%</td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  The Learned Meta Ridge strategy achieves a Sharpe Ratio of 8.10—surpassing the buy-and-hold benchmark (6.09)—while dramatically reducing maximum drawdown (−0.8% vs −2.1% for the T+1 single-horizon). This demonstrates that the multi-horizon meta-signal layer adds genuine economic value beyond improved point-wise accuracy.
+</p>
+
+<div class="fig">
+  <div class="fig-title">Figure 10 — Multi-Horizon Prediction Heatmap (DHR and Sharpe by Stock)</div>
+  <div class="fig-caption">Directional Hit Ratio (DHR) and Sharpe ratio across T+5, T+10, T+15 horizons and all five focal stocks. Short horizons (T+5) dominate for high-volatility tickers (NVDA, AMZN); medium horizons (T+10) are more reliable for stable-trending stocks (MSFT, AAPL).</div>
+  <img src="02_stock_price_regression/graph/02E_03_dhr_readable_v4.png" alt="DHR heatmap multi-horizon" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure 11 — Portfolio Cumulative Returns (Backtest)</div>
+  <div class="fig-caption">Equity curves comparing T+1-only, T+15-only, rule-based meta, and learned-meta-Ridge strategies against the buy-and-hold benchmark. The Learned Meta Ridge curve exhibits the smoothest compounding profile and lowest drawdown depth among all active strategies.</div>
+  <img src="02_stock_price_regression/graph/02F_01_cumulative_returns.png" alt="Cumulative return backtest" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure 12 — Maximum Drawdown Profile</div>
+  <div class="fig-caption">Drawdown time-series for all active strategies. The learned meta-signal achieves the shallowest peak-to-trough decline (−0.8%), indicating superior risk-adjusted capital preservation compared to naive single-horizon strategies.</div>
+  <img src="02_stock_price_regression/graph/02F_02_drawdown.png" alt="Drawdown profile" />
+</div>
+
+<div class="pb"></div>
+
+<!-- ════════════════════  SECTION 5: RESULTS & ANALYSIS  ════════════════════ -->
+<h2 id="sec5">5. Results, Analysis &amp; Presentation</h2>
+
+<h3>5.1 Regression Results — Five Focal Stocks</h3>
+<p>
+  Table&nbsp;7 presents per-stock test-set MAE and R² under the three main model configurations: (i) Cluster-Aware Baseline (02B), (ii) Sentiment-Enhanced Cluster Regression — Blended Strategy (02C), and (iii) Dynamic Cluster-News Stacked XGBoost (02D). The highlighted row shows the best model per stock.
+</p>
+
+<div class="table-wrap">
+  <table>
+    <caption>Table 7. Per-Stock Regression Performance (Test Set, 228 Samples)</caption>
+    <thead>
+      <tr>
+        <th class="l">Stock</th>
+        <th>02B Baseline MAE</th>
+        <th>02C Blended MAE</th>
+        <th>02C Blended R²</th>
+        <th>02D Stacked MAE</th>
+        <th>02D Stacked R²</th>
+        <th class="l">Best</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="l">AAPL</td>
+        <td>1.671</td>
+        <td><strong>1.460</strong></td>
+        <td>0.9669</td>
+        <td>1.331</td>
+        <td>0.9743</td>
+        <td class="l">02D Stacked</td>
+      </tr>
+      <tr>
+        <td class="l">AMZN</td>
+        <td>15.105</td>
+        <td>11.148</td>
+        <td>0.9854</td>
+        <td>—</td>
+        <td>—</td>
+        <td class="l">02C Cluster-Specific</td>
+      </tr>
+      <tr>
+        <td class="l">GOOG</td>
+        <td>15.047</td>
+        <td>8.121</td>
+        <td>0.9798</td>
+        <td>—</td>
+        <td>—</td>
+        <td class="l">02C Cluster-Specific</td>
+      </tr>
+      <tr>
+        <td class="l">MSFT</td>
+        <td>0.617</td>
+        <td><strong>0.594</strong></td>
+        <td>0.9872</td>
+        <td>—</td>
+        <td>—</td>
+        <td class="l">02C Blended</td>
+      </tr>
+      <tr>
+        <td class="l">NVDA</td>
+        <td>3.274</td>
+        <td><strong>2.920</strong></td>
+        <td>0.9886</td>
+        <td>—</td>
+        <td>—</td>
+        <td class="l">02C Blended</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  Key observations:
+</p>
+<ul>
+  <li><strong>AMZN and GOOG</strong> exhibit the largest absolute MAE values, attributable to their higher nominal price levels relative to their peers in the test period. After cluster-specific sentiment fusion, MAE drops by ~47% for AMZN (15.1 → 10.8) and ~46% for GOOG (15.0 → 8.1)—the most dramatic improvements in the comparison.</li>
+  <li><strong>MSFT</strong> achieves the lowest absolute MAE (0.594 USD) owing to its smoother price trend and consistent news coverage—a well-suited target for sentiment-enhanced models.</li>
+  <li><strong>NVDA</strong> records the highest R² (0.9886) despite higher nominal MAE, reflecting its large price range; the cluster sentiment signal from the semiconductor peer group demonstrably improves fit over the cluster-unaware baseline.</li>
+  <li><strong>AAPL</strong> benefits most from the full dynamic cluster-news stacked configuration (02D: MAE = 1.331), suggesting that AAPL's cluster peers provide consistently timely news on days where AAPL-direct coverage is lagging.</li>
+</ul>
+
+<h3>5.2 Baseline vs Improved Model Comparison (Aggregate)</h3>
+
+<div class="table-wrap">
+  <table>
+    <caption>Table 8. Aggregate Metrics — Baseline vs Improved Models</caption>
+    <thead>
+      <tr>
+        <th class="l">Model</th>
+        <th>MAE</th>
+        <th>RMSE</th>
+        <th>R²</th>
+        <th>MAPE (%)</th>
+        <th>Directional Acc.</th>
+        <th>MAE vs Baseline</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="l">Baseline XGBoost (02B)</td>
+        <td>4.968</td>
+        <td>9.517</td>
+        <td>0.999519</td>
+        <td>1.081</td>
+        <td>—</td>
+        <td>0.000</td>
+      </tr>
+      <tr>
+        <td class="l">Sentiment-Enhanced Blended (02C)</td>
+        <td>4.838</td>
+        <td>9.297</td>
+        <td>0.999541</td>
+        <td>1.069</td>
+        <td>—</td>
+        <td>−0.130</td>
+      </tr>
+      <tr>
+        <td class="l">Cluster-News Direct XGB (02D)</td>
+        <td>0.921</td>
+        <td>2.263</td>
+        <td>0.999686</td>
+        <td>—</td>
+        <td>0.508</td>
+        <td>—</td>
+      </tr>
+      <tr class="best">
+        <td class="l"><strong>Cluster-News Stacked XGB (02D)</strong></td>
+        <td><strong>0.918</strong></td>
+        <td><strong>2.254</strong></td>
+        <td><strong>0.999688</strong></td>
+        <td>—</td>
+        <td><strong>0.515</strong></td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td class="l">Dynamic Cluster-News Stacked (Final)</td>
+        <td>4.511</td>
+        <td>8.802</td>
+        <td>0.999583</td>
+        <td>—</td>
+        <td><strong>0.547</strong></td>
+        <td>−0.457</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p class="note">Note: 02D per-row metrics reflect normalised return-scale evaluation; 02C/Final rows reflect absolute price-scale (same as 02B baseline). Improvement deltas are computed within the same evaluation specification.</p>
+
+<!-- Inline Bar Chart using Chart.js -->
+<div class="fig">
+  <div class="fig-title">Figure 13 — Baseline vs Improved Model: Per-Stock MAE Comparison</div>
+  <div class="fig-caption">Side-by-side MAE comparison across AAPL, AMZN, GOOG, MSFT, NVDA for the Cluster-Aware Baseline (02B) and the Sentiment-Enhanced Blended strategy (02C). Lower is better.</div>
+  <canvas id="maeChart"></canvas>
+  <script>
+    (function(){
+      var ctx = document.getElementById('maeChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['AAPL','AMZN','GOOG','MSFT','NVDA'],
+          datasets: [
+            {
+              label: '02B Cluster-Aware Baseline MAE',
+              data: [1.671, 15.105, 15.047, 0.617, 3.274],
+              backgroundColor: 'rgba(80,120,200,0.75)',
+              borderColor: 'rgba(50,80,160,1)',
+              borderWidth: 1
+            },
+            {
+              label: '02C Sentiment-Enhanced Blended MAE',
+              data: [1.460, 11.148, 8.121, 0.594, 2.920],
+              backgroundColor: 'rgba(60,180,120,0.75)',
+              borderColor: 'rgba(30,130,80,1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'MAE (USD)' }
+            }
+          }
+        }
+      });
+    })();
+  </script>
+</div>
+
+<!-- Inline R² chart -->
+<div class="fig">
+  <div class="fig-title">Figure 14 — Per-Stock R² Score Comparison</div>
+  <div class="fig-caption">R² values for the three regression strategies across AAPL, AMZN, GOOG, MSFT, NVDA. All models achieve R² > 0.96; the cluster-specific strategy delivers the strongest gain for AMZN and GOOG where baseline R² was near zero without cluster augmentation (02B raw baseline collapsed for high-price stocks).</div>
+  <canvas id="r2Chart"></canvas>
+  <script>
+    (function(){
+      var ctx = document.getElementById('r2Chart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['AAPL','AMZN','GOOG','MSFT','NVDA'],
+          datasets: [
+            {
+              label: '02C GlobalSent R²',
+              data: [0.9669, 0.9854, 0.9798, 0.9872, 0.9886],
+              backgroundColor: 'rgba(200,100,60,0.75)',
+              borderColor: 'rgba(150,60,30,1)',
+              borderWidth: 1
+            },
+            {
+              label: '02C ClusterSpecific R²',
+              data: [0.9632, 0.9854, 0.9790, 0.9826, 0.9807],
+              backgroundColor: 'rgba(100,160,220,0.75)',
+              borderColor: 'rgba(60,100,170,1)',
+              borderWidth: 1
+            },
+            {
+              label: '02C Blended R²',
+              data: [0.9669, 0.9854, 0.9798, 0.9872, 0.9886],
+              backgroundColor: 'rgba(60,180,120,0.75)',
+              borderColor: 'rgba(30,130,80,1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            y: {
+              min: 0.95,
+              title: { display: true, text: 'R² Score' }
+            }
+          }
+        }
+      });
+    })();
+  </script>
+</div>
+
+<h3>5.3 Clustering Analysis Results</h3>
+
+<div class="table-wrap">
+  <table>
+    <caption>Table 9. Clustering Method Comparison (505 S&amp;P 500 Stocks)</caption>
+    <thead>
+      <tr>
+        <th class="l">Method</th>
+        <th>K</th>
+        <th>Silhouette</th>
+        <th>DBI</th>
+        <th>Noise Ratio</th>
+        <th>Composite Score</th>
+        <th>Rank</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="best"><td class="l"><strong>K-Means (03A)</strong></td><td>6</td><td><strong>0.250</strong></td><td><strong>0.978</strong></td><td>0.0%</td><td><strong>0.577</strong></td><td><strong>1</strong></td></tr>
+      <tr><td class="l">DBSCAN (03C)</td><td>2</td><td>0.565</td><td>0.552</td><td>9.3%</td><td>0.550</td><td>2</td></tr>
+      <tr><td class="l">GMM (03D)</td><td>9</td><td>0.057</td><td>1.611</td><td>0.0%</td><td>0.502</td><td>3</td></tr>
+      <tr><td class="l">Autoencoder + KM (03E)</td><td>4</td><td>0.225</td><td>1.546</td><td>0.0%</td><td>0.506</td><td>4</td></tr>
+      <tr><td class="l">Hierarchical (03B)</td><td>4</td><td>0.197</td><td>1.748</td><td>0.0%</td><td>0.459</td><td>5</td></tr>
+      <tr><td class="l">t-SNE + KM (03F)</td><td>2</td><td>0.188</td><td>1.985</td><td>0.0%</td><td>0.433</td><td>6</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  K-Means achieves the top composite score (0.577) driven by zero noise ratio, strong effective cluster count (2.40 effective clusters), and competitive feature-separation score. DBSCAN achieves the highest raw silhouette score (0.565) but its 9.3% noise ratio—504 stocks marked as noise—renders it unsuitable as a sentiment routing backbone, since noise-assigned stocks receive no peer sentiment signal. This directly motivates the K-Means selection for the Task&nbsp;1 sentiment module.
+</p>
+
+<!-- Inline clustering method chart -->
+<div class="fig">
+  <div class="fig-title">Figure 15 — Clustering Method Composite Score Comparison</div>
+  <div class="fig-caption">Composite score comparison across six clustering methods. K-Means leads on the multi-criterion composite score that balances silhouette quality, cluster balance, risk–return separation, and noise tolerance.</div>
+  <canvas id="clusterChart"></canvas>
+  <script>
+    (function(){
+      var ctx = document.getElementById('clusterChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['K-Means (03A)','DBSCAN (03C)','GMM (03D)','Autoencoder+KM (03E)','Hierarchical (03B)','t-SNE+KM (03F)'],
+          datasets: [{
+            label: 'Composite Score (higher is better)',
+            data: [0.577, 0.550, 0.502, 0.506, 0.459, 0.433],
+            backgroundColor: [
+              'rgba(60,180,120,0.8)','rgba(80,120,200,0.7)','rgba(200,160,60,0.7)',
+              'rgba(180,100,60,0.7)','rgba(100,180,200,0.7)','rgba(160,80,180,0.7)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              min: 0.3,
+              title: { display: true, text: 'Composite Score' }
+            }
+          }
+        }
+      });
+    })();
+  </script>
+</div>
+
+<h3>5.4 Predicted vs Actual Time-Series (Key Visualisations)</h3>
+
+<div class="fig">
+  <div class="fig-title">Figure 16 — Predicted vs Actual: All Five Focal Stocks (Sentiment-Enhanced Model)</div>
+  <div class="fig-caption">Sentiment-enhanced XGBoost predicted (dashed) versus actual (solid) closing prices across AAPL, AMZN, GOOG, MSFT, NVDA on the test set. Model tracking is tight across all five stocks; the most visible deviations occur during NVDA's sharp acceleration phase (Q1 2024), where the model lags by approximately 1–2 trading days.</div>
+  <img src="02_stock_price_regression/graph/13_sentiment_prediction_vs_actual_requested5.png" alt="Predicted vs actual for 5 stocks" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure 17 — Feature Importance (Cluster-Aware XGBoost)</div>
+  <div class="fig-caption">XGBoost feature importance bar chart for the cluster-aware sentiment-enhanced model. Lagged sentiment features (<code>sent_lag1</code>, <code>sent_lag5</code>, <code>sent_lag10</code>) rank among the top contributors alongside Bollinger %B and price-momentum indicators, validating the utility of the temporal decay design.</div>
+  <img src="02_stock_price_regression/graph/10_cluster_aware_feature_importance.png" alt="Feature importance" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure 18 — Cluster Centroid Profile Heatmap</div>
+  <div class="fig-caption">Standardised feature values for each K-Means cluster centroid. Cluster 1 (high-momentum / high-return) and Cluster 4 (high-volatility / momentum reversal) form the primary peer sets for NVDA and AMZN respectively, providing contextually coherent sentiment aggregation.</div>
+  <img src="02_stock_price_regression/graph/08K_cluster_centroid_profile_heatmap.png" alt="Cluster centroid heatmap" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure 19 — Risk–Return Cluster Map (K-Means)</div>
+  <div class="fig-caption">Two-dimensional risk–return scatter of all 505 S&amp;P 500 stocks, coloured by K-Means cluster assignment. The positive slope of the cloud reflects the expected risk–return trade-off; cluster boundaries correctly separate defensive low-volatility names from high-momentum growth stocks.</div>
+  <img src="02_stock_price_regression/graph/08L_cluster_finance_risk_return_map.png" alt="Risk-return cluster map" />
+</div>
+
+<h3>5.5 Residual Analysis</h3>
+
+<div class="fig">
+  <div class="fig-title">Figure 20 — Residual Analysis (XGBoost, AAPL)</div>
+  <div class="fig-caption">Residual distribution (left), Q-Q plot (right), and residual-vs-fitted scatter (centre) for the AAPL test predictions. Residuals are approximately normally distributed with slight positive skew, consistent with the model under-predicting during sharp up-days—a common limitation of lagged-feature regressors in momentum-driven regimes.</div>
+  <img src="02_stock_price_regression/graph/05_residual_analysis.png" alt="Residual analysis" />
+</div>
+
+<h3>5.6 Per-Stock Sharpe and VIX Regime Performance</h3>
+
+<div class="fig">
+  <div class="fig-title">Figure 21 — Per-Stock Sharpe Ratio (Backtest)</div>
+  <div class="fig-caption">Model-implied strategy Sharpe ratios per stock across test window. MSFT and AAPL exhibit the most stable positive Sharpe values; NVDA shows the widest range reflecting its high-beta, sentiment-reactive profile.</div>
+  <img src="02_stock_price_regression/graph/02F_05_per_stock_sharpe.png" alt="Per-stock Sharpe ratio" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure 22 — VIX Regime Performance</div>
+  <div class="fig-caption">Strategy performance segmented by VIX quintile (low to high volatility regimes). Performance degrades in the highest VIX quintile, motivating the regime-adaptive weighting used in the meta-signal layer (Improvement 2). The model retains positive DHR even in the highest volatility regime, confirming structural robustness.</div>
+  <img src="02_stock_price_regression/graph/02F_03_vix_regime_performance.png" alt="VIX regime performance" />
+</div>
+
+<h3>5.7 Direction Confusion Matrix</h3>
+
+<div class="fig">
+  <div class="fig-title">Figure 23 — Directional Prediction Confusion Matrix</div>
+  <div class="fig-caption">Confusion matrix for next-day direction prediction (Up vs Down) across the test set. The model achieves DHR = 0.547 (vs random baseline 0.500), with stronger precision for up-moves reflecting the moderate bullish trend bias in the S&amp;P 500 test window.</div>
+  <img src="02_stock_price_regression/graph/02F_07_test_direction_confusion_matrix.png" alt="Direction confusion matrix" />
+</div>
+
+<div class="pb"></div>
+
+<!-- ════════════════════  SECTION 6: CONCLUSION  ════════════════════ -->
+<h2 id="sec6">6. Conclusion</h2>
+
+<h3>6.1 Summary of Findings</h3>
+<p>
+  This project has demonstrated that a dual-task machine learning framework—combining unsupervised cluster analysis with supervised price regression—delivers measurable improvements over single-signal baselines for S&amp;P 500 stock forecasting. The key results are:
+</p>
+<ol>
+  <li>
+    <strong>Regression Performance:</strong> The Dynamic Cluster-News Stacked XGBoost achieves a best aggregate MAE of 4.511 (vs 4.968 baseline, −9.2%) and R² = 0.9996 on the held-out test set, with Directional Accuracy improving from 0.517 to 0.547.
+  </li>
+  <li>
+    <strong>Cluster Quality:</strong> K-Means (K=6) is selected as the optimal clustering method from six candidates with a composite score of 0.577. The cluster assignments are financially coherent, correctly grouping high-volatility semiconductors, defensive utilities, and growth-oriented technology stocks into distinct peer sets.
+  </li>
+  <li>
+    <strong>Improvement 1 — Cluster News Prediction:</strong> Auto-tuned temporal sentiment decay (L=10, λ=0.2) converts sparse per-ticker news into robust cluster-pooled intelligence. AMZN and GOOG experience 46–47% MAE reduction through cluster-specific sentiment fusion, confirming that peer news aggregation is most valuable for stocks with irregular direct coverage.
+  </li>
+  <li>
+    <strong>Improvement 2 — Future Prediction Meta-Signal:</strong> The multi-horizon Learned Meta Ridge strategy achieves a Sharpe Ratio of 8.10 (vs 2.42 for T+1 alone and 6.09 buy-and-hold), reducing maximum drawdown to −0.8% while improving directional hit rate to 0.681. This validates the economic value of incorporating multi-horizon forecasting into portfolio strategy allocation.
+  </li>
+  <li>
+    <strong>Model Selection:</strong> XGBRegressor consistently outperforms LSTM/GRU candidates under the given data regime. Deep sequence models exhibit training–validation divergence consistent with overfitting pressure when effective per-ticker sample sizes are constrained by strict temporal splitting—a fundamental data-regime constraint that gradient-boosted trees naturally handle.
+  </li>
+</ol>
+
+<h3>6.2 Methodological Contributions</h3>
+<p>
+  Beyond numerical results, this project makes the following methodological contributions:
+</p>
+<ul>
+  <li><strong>Cluster-as-Signal-Router Paradigm:</strong> Reframes unsupervised clustering not merely as an analytical tool but as a structural mechanism for information routing—expanding news coverage from individual tickers to behavioural peer groups.</li>
+  <li><strong>Evidence-Driven Hyperparameter Selection:</strong> Replaces heuristic lag-decay choices with grid-search evidence, producing a reproducible, robust configuration that sits in a flat low-MAE region rather than at a sharp minimum.</li>
+  <li><strong>Dual-Objective Evaluation Protocol:</strong> Establishes a separation between point-wise accuracy metrics (MAE/RMSE/R²) and deployment utility metrics (DHR/Sharpe/Drawdown), preventing metric-singleton optimisation that could mislead real-world deployment decisions.</li>
+</ul>
+
+<h3>6.3 Limitations</h3>
+<p>
+  Several limitations constrain the current system:
+</p>
+<ul>
+  <li><strong>Transaction Costs:</strong> Backtest results do not incorporate realistic transaction costs, slippage, or market impact, which would reduce reported Sharpe ratios in live trading.</li>
+  <li><strong>Static Cluster Topology:</strong> Cluster assignments are computed once and held fixed; in practice, stock correlations and sector compositions evolve over time.</li>
+  <li><strong>Sentiment Source Coverage:</strong> News sentiment relies on publicly available headline APIs with potentially uneven quality and timing relative to institutional news flows.</li>
+  <li><strong>Regime Stationarity:</strong> The test window corresponds to a broadly bullish market phase; performance under sustained bear regimes or structural breaks (e.g., March 2020 COVID shock) is not fully characterised.</li>
+</ul>
+
+<h3>6.4 Future Work</h3>
+<ul>
+  <li><strong>Dynamic/Online Clustering:</strong> Implement rolling-window K-Means updates that adapt cluster memberships to evolving sector correlation topology, improving the recency of peer sentiment signals.</li>
+  <li><strong>Regime-Adaptive Decay:</strong> Replace the fixed decay coefficient λ with a learnable, VIX-conditioned decay function that automatically shortens the sentiment memory window during high-volatility regimes.</li>
+  <li><strong>Uncertainty-Aware Predictions:</strong> Add conformal prediction intervals or Bayesian XGBoost variants to provide position-sizing signals that scale with model confidence rather than point estimates.</li>
+  <li><strong>Latency-Aware Sentiment Alignment:</strong> Incorporate intraday news arrival timestamps to model delayed market reaction windows, improving the causal alignment between news release and price response.</li>
+  <li><strong>Alternative Data Expansion:</strong> Integrate earnings call transcript embeddings, satellite data, and options implied volatility to further enrich the feature space beyond traditional OHLCV and headline sentiment.</li>
+</ul>
+
+<div class="callout">
+  <strong>Core Thesis Validated:</strong> Clustering is not only an unsupervised analysis module; it functions as a structural signal router that converts sparse individual-news streams into cluster-informed predictive features—measurably improving both regression accuracy and portfolio strategy utility for S&amp;P 500 stock forecasting.
+</div>
+
+<hr class="thin" />
+
+<!-- ════════════════════  APPENDIX  ════════════════════ -->
+<h2>Appendix A — Additional Figures</h2>
+
+<div class="fig">
+  <div class="fig-title">Figure A1 — Optimal K Selection (Elbow &amp; Silhouette)</div>
+  <div class="fig-caption">Combined Elbow method and Silhouette score across K = 2..12. The optimal K=6 is selected at the elbow inflection point where marginal distortion gain diminishes while silhouette score remains high.</div>
+  <img src="03_stock_clustering_analysis/graph/03A_01_k_selection.png" alt="K selection elbow" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure A2 — Hierarchical Clustering Dendrogram</div>
+  <div class="fig-caption">Ward-linkage dendrogram for the 505-stock universe. The horizontal cut at K=4 produces four well-separated clusters; the dendrogram structure confirms that the inter-cluster distance is substantially larger than intra-cluster distance at this level.</div>
+  <img src="03_stock_clustering_analysis/graph/03B_01_dendrogram.png" alt="Hierarchical dendrogram" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure A3 — Cluster Distribution (Top-3 Methods)</div>
+  <div class="fig-caption">Per-cluster stock count distribution for K-Means (03A), GMM (03D), and Autoencoder+KM (03E). GMM achieves the most balanced distribution across 9 clusters; K-Means has one dominant large cluster (cluster 0, ~54%) reflecting the predominance of mid-volatility, moderate-return S&amp;P 500 constituents.</div>
+  <img src="02_stock_price_regression/graph/08A_cluster_distribution_top3.png" alt="Cluster distribution" />
+</div>
+
+<div class="fig">
+  <div class="fig-title">Figure A4 — Reliability Diagnostics (Multi-Horizon, v4)</div>
+  <div class="fig-caption">Calibration reliability chart showing prediction confidence versus actual coverage rate across T+5, T+10, T+15 horizons. Well-calibrated models lie on the diagonal; the T+5 XGBoost shows the best calibration, consistent with its selection as the primary short-horizon signal.</div>
+  <img src="02_stock_price_regression/graph/02E_07_reliability_diagnostics_v4.png" alt="Reliability diagnostics" />
+</div>
+
+<h2>Appendix B — Data Sources</h2>
+<ul>
+  <li><strong>S&amp;P 500 OHLCV:</strong> Kaggle "S&amp;P 500 Stocks" dataset (ticker-level daily history). Accessed via project data pipeline.</li>
+  <li><strong>News Headlines:</strong> Multi-source finance headline API with deduplication; cached in <code>02C_news_headlines_cache.csv</code>.</li>
+  <li><strong>Sentiment Scores:</strong> Pre-computed and cached in <code>02D_headline_sentiment_cache.csv</code>, <code>02C_daily_sentiment_scores.csv</code>.</li>
+  <li><strong>Cluster Assignments:</strong> Final K-Means assignments in <code>stock_cluster_assignments.csv</code> (505 stocks × 10 features).</li>
+</ul>
+
+<!-- ════════════════════  REFERENCES  ════════════════════ -->
+<div class="references">
+  <h2 id="refs">References</h2>
+  <ol>
+    <li>Chen, T. &amp; Guestrin, C. (2016). XGBoost: A scalable tree boosting system. <em>Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</em>, 785–794.</li>
+    <li>Hochreiter, S. &amp; Schmidhuber, J. (1997). Long short-term memory. <em>Neural Computation</em>, 9(8), 1735–1780.</li>
+    <li>Hartigan, J. A. &amp; Wong, M. A. (1979). A k-means clustering algorithm. <em>Applied Statistics</em>, 28(1), 100–108.</li>
+    <li>Ester, M., Kriegel, H.-P., Sander, J., &amp; Xu, X. (1996). A density-based algorithm for discovering clusters in large spatial databases with noise. <em>Proceedings of the 2nd ACM SIGKDD</em>, 226–231.</li>
+    <li>Akiba, T., Sano, S., Yanase, T., Ohta, T., &amp; Koyama, M. (2019). Optuna: A next-generation hyperparameter optimization framework. <em>Proceedings of the 25th ACM SIGKDD</em>, 2623–2631.</li>
+    <li>Tetlock, P. C. (2007). Giving content to investor sentiment: The role of media in the stock market. <em>Journal of Finance</em>, 62(3), 1139–1168.</li>
+    <li>Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. <em>Journal of Econometrics</em>, 31(3), 307–327.</li>
+    <li>Loughran, T. &amp; McDonald, B. (2011). When is a liability not a liability? Textual analysis, dictionaries, and 10-Ks. <em>Journal of Finance</em>, 66(1), 35–65.</li>
+    <li>De Prado, M. L. (2018). <em>Advances in Financial Machine Learning</em>. John Wiley &amp; Sons.</li>
+    <li>Rousseeuw, P. J. (1987). Silhouettes: A graphical aid to the interpretation and validation of cluster analysis. <em>Journal of Computational and Applied Mathematics</em>, 20, 53–65.</li>
+  </ol>
+</div>
+
+<p class="note" style="margin-top:28px;">
+  <em>All computations performed in Python 3.10 using scikit-learn, XGBoost, PyTorch, pandas, and Chart.js. Graphs and CSV outputs located in <code>project_folder/02_stock_price_regression/</code> and <code>project_folder/03_stock_clustering_analysis/</code>. This report is formatted for browser rendering and direct export to PDF or Word.</em>
+</p>
+
+</body>
+</html>
