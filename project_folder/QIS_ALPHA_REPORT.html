@@ -230,7 +230,7 @@
       <li><a href="#sec4">Analysis, Backtesting &amp; Evaluation</a></li>
       <li><a href="#sec5">Execution, Liquidity &amp; TCA</a></li>
       <li><a href="#sec6">Implementation Path &amp; Tooling Provenance</a></li>
-      <li><a href="#sec7">Conclusion</a></li>
+      <li><a href="#sec7">Conclusion and Institutional Decision Gate</a></li>
     </ol>
 
     <div class="pb"></div>
@@ -250,11 +250,16 @@
       consistent directional uplift over baseline technical-only configurations,
       while the downstream multi-horizon learned meta-layer materially improves
       risk-adjusted returns. After applying execution-realism corrections (1-day
-      lag, 5 bps one-way cost), the strongest configuration — Learned Meta XGB —
-      recorded Sharpe +4.45 versus Buy &amp; Hold +6.12, Max Drawdown −1.40%,
-      Total Return +6.13%, and Directional Hit Ratio 60.9%. While lower-drawdown
-      than passive, further out-of-sample validation over a full-year window is
-      required before deployment.
+      lag, 5 bps one-way cost), the strongest gross configuration — Learned Meta
+      Ridge — recorded Sharpe +2.85 (46-day OOS, gross of strict cost caps).
+      Learned Meta XGB achieved Sharpe +2.19 over a 99-day OOS window.
+      The Buy-and-Hold benchmark achieved Sharpe +6.12 and +2.61 over the same
+      respective windows, outperforming all active strategies in absolute terms.
+      Under strict walk-forward OOS with institutional cost scenarios (5–20 bps),
+      <strong>all active strategies produce deeply negative net Sharpe</strong>
+      (range −2.97 to −4.58). This report concludes with an institutional
+      <strong>FAIL</strong> status pending resolution of the open issues
+      documented in Section 7.
     </p>
     <div class="callout">
       <strong>Portfolio Construction Recommendation:</strong>
@@ -512,11 +517,21 @@
 
     <h3>4.1 Regression and Directional Evaluation</h3>
     <p>
-      Evaluation combines point-error metrics (MAE, RMSE, R2) and directional
+      Evaluation combines point-error metrics (MAE, RMSE, R²) and directional
       utility (DHR). The cluster-news stacked implementation improved
       directional accuracy versus baseline while preserving high explanatory
       fit.
     </p>
+    <div class="callout" style="border-left-color: #b08030; background: #fffdf0">
+      <strong>Important: Near-1.0 R² Interpretation (02D Framework).</strong>
+      The R² values near 0.9997 do <em>not</em> indicate look-ahead bias or a
+      trivial problem. The 02D model predicts the <em>next-day closing price
+      level</em> (a highly autocorrelated quantity), not the one-day log-return.
+      Near-unit R² on price levels is expected even for a naïve random-walk
+      forecast. The financially meaningful metrics are directional accuracy
+      (~51%) and cross-validated MAE on returns (CV_MAE ≈ 1.1%). R² on price
+      levels must <strong>not</strong> be used as a signal-quality criterion.
+    </div>
 
     <div class="table-wrap">
       <table>
@@ -564,15 +579,19 @@
 
     <h3>4.2 Backtesting Results and Risk-Adjusted Outcomes</h3>
     <p>
-      Backtesting in the multi-horizon strategy layer highlights clear
-      improvements from learned meta-combination relative to single-horizon
-      controls.
+      Backtesting in the multi-horizon strategy layer highlights improvements from
+      learned meta-combination relative to single-horizon controls. All metrics
+      below are from <code>02F_backtest_performance.csv</code> (5 bps one-way
+      cost applied, annualised Sharpe). <em>Note: T+1, T+15, Rule-Based, and
+      Ridge are evaluated over a 46-day OOS window; XGB over a 99-day OOS
+      window — direct Sharpe comparisons across these are not valid without
+      normalisation.</em>
     </p>
 
     <div class="table-wrap">
       <table>
         <caption>
-          Table 4. Strategy Backtest Metrics
+          Table 4. Strategy Backtest Metrics (Gross of Strict Institutional Costs; 5 bps one-way applied)
         </caption>
         <thead>
           <tr>
@@ -580,49 +599,71 @@
             <th>Sharpe</th>
             <th>Max Drawdown</th>
             <th>Total Return</th>
-            <th>Information Ratio (proxy)</th>
+            <th>Ann. Return</th>
             <th>DHR</th>
+            <th>OOS Days</th>
+            <th>BH Sharpe (same window)</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td class="l">T+1 Only</td>
-            <td>2.42</td>
-            <td>-2.1%</td>
-            <td>3.3%</td>
-            <td>0.76</td>
-            <td>0.575</td>
+            <td>0.86</td>
+            <td>−3.1%</td>
+            <td>1.2%</td>
+            <td>6.5%</td>
+            <td>0.522</td>
+            <td>46</td>
+            <td>6.12</td>
           </tr>
           <tr>
             <td class="l">T+15 Only</td>
-            <td>-5.85</td>
-            <td>-7.6%</td>
-            <td>-7.4%</td>
-            <td>-0.98</td>
-            <td>0.404</td>
+            <td>0.81</td>
+            <td>−3.1%</td>
+            <td>1.0%</td>
+            <td>5.7%</td>
+            <td>0.500</td>
+            <td>46</td>
+            <td>6.12</td>
           </tr>
           <tr>
-            <td class="l">Learned Meta Ridge</td>
-            <td>3.91</td>
-            <td>−1.6%</td>
-            <td>5.4%</td>
-            <td>0.98</td>
-            <td>0.638</td>
+            <td class="l">Rule-Based Meta (02F)</td>
+            <td>0.86</td>
+            <td>−3.1%</td>
+            <td>1.2%</td>
+            <td>6.5%</td>
+            <td>0.522</td>
+            <td>46</td>
+            <td>6.12</td>
+          </tr>
+          <tr>
+            <td class="l">Learned Meta Ridge (02F)</td>
+            <td>2.85</td>
+            <td>−2.4%</td>
+            <td>4.0%</td>
+            <td>23.6%</td>
+            <td>0.544</td>
+            <td>46</td>
+            <td>6.12</td>
           </tr>
           <tr class="best">
             <td class="l">Learned Meta XGB (02F) ★</td>
-            <td>+4.45</td>
-            <td>−1.40%</td>
-            <td>+6.13%</td>
-            <td>1.12</td>
-            <td>0.609</td>
+            <td>2.19</td>
+            <td>−2.4%</td>
+            <td>5.9%</td>
+            <td>15.5%</td>
+            <td>0.596</td>
+            <td>99</td>
+            <td>2.61</td>
           </tr>
           <tr>
-            <td class="l">Buy-and-Hold Benchmark</td>
-            <td>+6.12</td>
+            <td class="l">Buy-and-Hold Benchmark (46d)</td>
+            <td>6.12</td>
             <td>−</td>
-            <td>+8.24%</td>
+            <td>8.2%</td>
             <td>−</td>
+            <td>−</td>
+            <td>46</td>
             <td>−</td>
           </tr>
         </tbody>
@@ -634,12 +675,14 @@
       style="border-left-color: #b03030; background: #fff5f5"
     >
       <strong>Interpretation Guardrail:</strong>
-      Although Learned Meta XGB shows the best strategy-level Sharpe within the
-      active set, Buy-and-Hold has higher absolute Sharpe and return in the same
-      window. Therefore, current evidence supports
-      <em>risk-shaping potential</em>
-      rather than clear standalone alpha superiority.
-    </div>
+      All active strategies are outperformed by Buy-and-Hold in both OOS
+      windows. Learned Meta Ridge (Sharpe 2.85) and XGB (Sharpe 2.19) show
+      apparent improvement within the active set, but Buy-and-Hold Sharpe
+      (6.12 for the 46-day window) dominates. Under strict WFO with
+      institutional cost scenarios, all active strategies produce
+      <strong>negative net Sharpe</strong> (see Table 5A). Current evidence
+      supports <em>risk-shaping research potential</em> only, not standalone
+      alpha superiority.
 
     <h4>
       4.2A Active-Return Attribution Framework (Required for Institutional
@@ -713,82 +756,96 @@
       assumptions should be revisited before scaling notional exposure.
     </div>
 
-    <h3>4.4 Walk-Forward OOS Validation (13 Expanding Windows)</h3>
+    <h3>4.4 Walk-Forward OOS Validation (5 Expanding Windows)</h3>
     <p>
       To reduce single-split fragility, the evaluation was extended to an
-      expanding-window walk-forward protocol with 15-day OOS slices and a 15-day
-      step size. This produced <strong>13 complete windows</strong>
-      (195 OOS trading days), materially improving robustness versus the
-      original 47-day holdout.
+      expanding-window walk-forward protocol with 20-day OOS slices and a
+      monthly step size. This produced <strong>5 complete windows</strong>
+      (100 OOS trading days across 2017-08-04 to 2017-12-26), representing a
+      diagnostic complement to the primary 46–99-day fixed-split holdout.
     </p>
+    <div class="callout" style="border-left-color: #b03030; background: #fff5f5">
+      <strong>Data provenance correction:</strong> An earlier draft of this
+      report cited 13 expanding windows × 15-day OOS = 195 OOS trading days.
+      The authoritative source file <code>02F_walkforward_oos.csv</code>
+      contains 5 windows × 20 OOS days = 100 days. All WFO statistics below
+      are derived from this file.
+    </div>
     <p>
-      The Buy &amp; Hold mean Sharpe across rolling windows was
-      <strong>+2.89</strong>. Learned Meta XGB recorded the highest WFO
-      consistency with <strong>~69%</strong> win-rate (fraction of windows with
-      Sharpe &gt; 0), and was the only strategy clearly above the 50% baseline.
+      Buy &amp; Hold mean Sharpe across the 5 rolling windows was
+      <strong>+3.15</strong>. Learned Meta XGB WFO recorded the highest WFO
+      consistency with <strong>4/5 (80%)</strong> win-rate (fraction of windows
+      with Sharpe &gt; 0), matching Buy &amp; Hold's win-rate. All other
+      active strategies achieved only 40% win-rate (2/5 windows positive).
     </p>
 
     <div class="table-wrap">
       <table>
         <caption>
-          Table 4A. Walk-Forward OOS Summary (13 Windows &times; 15-Day OOS)
+          Table 4A. Walk-Forward OOS Summary (5 Windows &times; 20-Day OOS; source: 02F_walkforward_oos.csv)
         </caption>
         <thead>
           <tr>
             <th class="l">Strategy</th>
-            <th>Fixed Split Sharpe (47d)</th>
-            <th>WFO Win-Rate (%)</th>
+            <th>Fixed Split Sharpe</th>
+            <th>WFO Mean Sharpe (5 windows)</th>
+            <th>WFO Win-Rate (Sharpe&gt;0)</th>
             <th class="l">Interpretation</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td class="l">T+1 Only (02D)</td>
-            <td>+2.42</td>
-            <td>~30%</td>
-            <td class="l">Inconsistent across rolling windows</td>
-          </tr>
-          <tr>
-            <td class="l">T+15 Only (02E)</td>
-            <td>−5.85</td>
-            <td>~53%</td>
-            <td class="l">Marginal consistency; weak fixed-split profile</td>
+            <td>0.86</td>
+            <td>−0.57</td>
+            <td>2/5 = 40%</td>
+            <td class="l">Negative mean WFO; inconsistent across windows</td>
           </tr>
           <tr>
             <td class="l">Rule-Based Meta (02F)</td>
-            <td>+2.42</td>
-            <td>~30%</td>
-            <td class="l">No lift over T+1 baseline</td>
+            <td>0.86</td>
+            <td>−0.57</td>
+            <td>2/5 = 40%</td>
+            <td class="l">Identical to T+1; no WFO lift from rule-based meta</td>
           </tr>
           <tr>
-            <td class="l">Learned Meta Ridge (02F)</td>
-            <td>+3.91</td>
-            <td>~38%</td>
-            <td class="l">Moderate; fixed split appears optimistic</td>
+            <td class="l">Ridge WFO (02F)</td>
+            <td>2.85</td>
+            <td>−0.49</td>
+            <td>2/5 = 40%</td>
+            <td class="l">Fixed split optimistic vs. WFO mean</td>
           </tr>
           <tr class="best">
-            <td class="l">Learned Meta XGB (02F) ★</td>
-            <td>+4.45</td>
-            <td><strong>~69%</strong></td>
-            <td class="l">Highest OOS consistency; only strategy &gt;50%</td>
+            <td class="l">XGB WFO (02F) ★</td>
+            <td>2.19</td>
+            <td><strong>+1.47</strong></td>
+            <td><strong>4/5 = 80%</strong></td>
+            <td class="l">Best WFO consistency; still below BH win-rate</td>
           </tr>
           <tr>
             <td class="l">Buy &amp; Hold (reference)</td>
-            <td>+6.12</td>
-            <td>Mean Sharpe +2.89</td>
-            <td class="l">Rolling benchmark context</td>
+            <td>6.12</td>
+            <td>+3.15</td>
+            <td>4/5 = 80%</td>
+            <td class="l">Benchmark; ties XGB on win-rate, higher mean Sharpe</td>
           </tr>
         </tbody>
       </table>
     </div>
+    <p class="note">
+      Win-rate and mean Sharpe computed directly from 02F_walkforward_oos.csv
+      (windows 1–5, dates 2017-08-04 to 2017-12-26). XGB WFO window Sharpes:
+      +2.37, +2.75, +1.86, −2.23, +2.59. Ridge WFO: −8.69, −1.68, +1.86,
+      −1.21, +7.25. T+1/Rule-Based: −3.36, +2.49, +3.22, −2.55, −2.67.
+    </p>
 
     <div class="fig">
       <div class="fig-title">
-        Figure 6A. Fixed Split vs Walk-Forward OOS (13 Windows)
+        Figure 6A. Fixed Split vs Walk-Forward OOS (5 Windows)
       </div>
       <div class="fig-caption">
-        Three-panel comparison: fixed-split Sharpe vs WFO mean&plusmn;std, WFO
-        Sharpe distributions, and WFO win-rate by strategy.
+        WFO Sharpe distributions across 5 expanding windows (20-day OOS each)
+        and win-rate by strategy. Source: 02F_walkforward_oos.csv.
       </div>
       <img
         src="02_stock_price_regression/graph/02F_12_final_comparison_fixed_vs_wfo.png"
@@ -979,95 +1036,119 @@
       positive and exceeds a minimum confidence threshold.
     </p>
 
-    <h3>5.4 Execution Realism Status and Missing Empirical Outputs</h3>
+    <h3>5.4 Net-Cost Stress Results (Institutional Scenarios)</h3>
     <p>
-      Current TCA content is methodologically appropriate but remains largely
-      conceptual. Institutional readiness requires empirical implementation
-      diagnostics to be reported alongside strategy metrics.
+      Multi-scenario cost sensitivity is computed from
+      <code>02F_stress_test_robust_wfo.csv</code> and
+      <code>02F_factor_model_diagnostics.csv</code>. Three scenarios are tested:
+      5 bps one-way / 20% ADV cap (lenient); 10 bps / 10% ADV (base); 20 bps /
+      5% ADV (strict). All scenarios produce deeply negative net Sharpe,
+      confirming the strategy currently fails institutional cost thresholds.
     </p>
 
     <div class="table-wrap">
       <table>
         <caption>
-          Table 5A. Execution Realism Checklist (Institutional Minimum)
+          Table 5A. Net-Cost Sharpe Under Institutional Scenarios (XGB WFO; source: 02F_stress_test_robust_wfo.csv)
+        </caption>
+        <thead>
+          <tr>
+            <th class="l">Scenario</th>
+            <th>Cost (bps)</th>
+            <th>ADV Cap</th>
+            <th>Net Sharpe</th>
+            <th>Sharpe 95% CI</th>
+            <th>IR</th>
+            <th>Alpha t-stat (NW)</th>
+            <th>Beta Neutral?</th>
+            <th>Deployable?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#fff5f5">
+            <td class="l">5bps_20adv (Lenient)</td>
+            <td>5</td>
+            <td>20%</td>
+            <td>−4.11</td>
+            <td>[−7.15, −1.25]</td>
+            <td>−5.09</td>
+            <td>−2.73</td>
+            <td>No (β=−0.14)</td>
+            <td><strong>FAIL</strong></td>
+          </tr>
+          <tr style="background:#fff5f5">
+            <td class="l">10bps_10adv (Base)</td>
+            <td>10</td>
+            <td>10%</td>
+            <td>−3.87</td>
+            <td>[−7.04, −1.05]</td>
+            <td>−4.86</td>
+            <td>−2.51</td>
+            <td>No (β=−0.18)</td>
+            <td><strong>FAIL</strong></td>
+          </tr>
+          <tr style="background:#fff5f5">
+            <td class="l">20bps_5adv (Strict)</td>
+            <td>20</td>
+            <td>5%</td>
+            <td>−2.97</td>
+            <td>[−6.48, −0.13]</td>
+            <td>−4.31</td>
+            <td>−2.16</td>
+            <td>No (β=−0.29)</td>
+            <td><strong>FAIL</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Ridge WFO also fails all scenarios: net Sharpe range −3.96 to −4.58.
+      Avg turnover is only 2.6% (very low), suggesting the negative alpha is
+      structural, not purely cost-driven.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Table 5B. Execution Realism Checklist (Institutional Minimum)
         </caption>
         <thead>
           <tr>
             <th class="l">Item</th>
             <th>Status</th>
-            <th class="l">Required Upgrade</th>
+            <th class="l">Evidence / Required Upgrade</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td class="l">Transaction cost stress</td>
-            <td>Partial</td>
-            <td class="l">
-              Report realized net metrics under 0/5/10/20/30 bps in main table
-            </td>
+            <td style="background:#e6f4ea">Present</td>
+            <td class="l">3 scenarios (5/10/20 bps × 3 ADV caps); Table 5A above</td>
           </tr>
           <tr>
             <td class="l">Slippage model</td>
-            <td>Missing</td>
-            <td class="l">
-              Add decision-to-execution slippage estimates by volatility bucket
-            </td>
+            <td style="background:#fff5f5">Missing</td>
+            <td class="l">Add decision-to-execution slippage by volatility bucket</td>
           </tr>
           <tr>
             <td class="l">Market impact model</td>
-            <td>Missing</td>
-            <td class="l">Add nonlinear impact versus participation rate</td>
+            <td style="background:#fff5f5">Missing</td>
+            <td class="l">Add nonlinear impact vs. participation rate</td>
           </tr>
           <tr>
             <td class="l">Capacity / ADV feasibility</td>
-            <td>Missing</td>
-            <td class="l">
-              Add capacity curve and max deployable capital under ADV caps
-            </td>
+            <td style="background:#ffe5b0">Partial</td>
+            <td class="l">ADV cap tested in cost scenarios; capacity curve not plotted</td>
           </tr>
           <tr>
             <td class="l">Turnover implementation report</td>
-            <td>Partial</td>
-            <td class="l">
-              Report realized turnover distribution and concentration by day
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <caption>
-          Table 5. Implementation Hurdles and Mitigation
-        </caption>
-        <thead>
-          <tr>
-            <th class="l">Hurdle</th>
-            <th class="l">Observed Risk</th>
-            <th class="l">Mitigation</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="l">Signal Crowding</td>
-            <td class="l">Factor decay in consensus names</td>
-            <td class="l">Crowding penalty and turnover throttle</td>
+            <td style="background:#e6f4ea">Present</td>
+            <td class="l">Avg turnover reported per scenario (02F_backtest_performance.csv)</td>
           </tr>
           <tr>
-            <td class="l">Liquidity Shock</td>
-            <td class="l">Spread expansion and impact convexity</td>
-            <td class="l">Dynamic participation and no-trade bands</td>
-          </tr>
-          <tr>
-            <td class="l">Headline Latency</td>
-            <td class="l">Signal staleness in fast tape</td>
-            <td class="l">Timestamp gating and recency weights</td>
-          </tr>
-          <tr>
-            <td class="l">Macro Gap Risk</td>
-            <td class="l">Overnight jumps, policy repricing</td>
-            <td class="l">Gross reduction and index hedge overlay</td>
+            <td class="l">Uncertainty intervals for Sharpe</td>
+            <td style="background:#e6f4ea">Present</td>
+            <td class="l">Bootstrap 95% CI reported in Table 5A and Table 4C</td>
           </tr>
         </tbody>
       </table>
@@ -1232,85 +1313,228 @@
 
     <h3>6.6 Reproducibility Manifest (Audit Replication Standard)</h3>
     <p>
-      This report should include a deterministic run manifest so any reviewer
-      can reproduce every headline number exactly.
+      The deterministic run manifest below enables any reviewer to identify the
+      exact pipeline configuration used to produce the headline numbers in this
+      report.
     </p>
     <div class="table-wrap">
       <table>
         <caption>
-          Table 6A. Reproducibility and Audit Metadata Requirements
+          Table 6A. Reproducibility and Audit Metadata
         </caption>
         <thead>
           <tr>
             <th class="l">Artifact</th>
             <th>Status</th>
-            <th class="l">Required Content</th>
+            <th class="l">Value / Evidence</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td class="l">Exact split timestamps</td>
-            <td>Partial</td>
+            <td class="l">Exact OOS split timestamps</td>
+            <td style="background:#e6f4ea">Present</td>
             <td class="l">
-              Train/validation/test and all WFO boundaries in UTC
+              Primary holdout: 02F_backtest_performance.csv dates implicit
+              (46-day window). WFO windows: 2017-08-04 to 2017-12-26
+              (02F_walkforward_oos.csv).
             </td>
           </tr>
           <tr>
             <td class="l">Random seed registry</td>
-            <td>Missing</td>
-            <td class="l">Single source of truth for all model and CV seeds</td>
+            <td style="background:#ffe5b0">Partial</td>
+            <td class="l">
+              XGBoost random_state=42 (02D, 02F). K-Means n_init=10,
+              random_state=42 (03A). Full seed list not consolidated in
+              single manifest file.
+            </td>
           </tr>
           <tr>
             <td class="l">Parameter registry</td>
-            <td>Missing</td>
+            <td style="background:#ffe5b0">Partial</td>
             <td class="l">
-              Final hyperparameters + search ranges + selection rule
+              XGBoost params stored in notebooks (02D, 02F). Ridge alpha
+              selected by inner CV. Full hyperparameter grid not exported
+              to a standalone file.
             </td>
           </tr>
           <tr>
             <td class="l">Data snapshot manifest</td>
-            <td>Missing</td>
+            <td style="background:#ffe5b0">Partial</td>
             <td class="l">
-              Input file hashes, row counts, and extraction timestamp
+              Source: sp500_raw.csv (03_stock_clustering_analysis/data).
+              Headlines: 02C_news_headlines_cache.csv. Profile cache:
+              02D_company_profile_cache.csv. File hashes and exact
+              extraction timestamp not recorded.
             </td>
           </tr>
           <tr>
-            <td class="l">Run checksum</td>
-            <td>Missing</td>
+            <td class="l">Python environment</td>
+            <td style="background:#ffe5b0">Partial</td>
             <td class="l">
-              Notebook/report version, code commit hash, output hash
+              Python 3.10; pandas, numpy, scikit-learn, xgboost, pytorch,
+              matplotlib, seaborn, optuna. Exact pinned versions not
+              exported to requirements.txt.
+            </td>
+          </tr>
+          <tr>
+            <td class="l">Experiment IDs / rejected variants</td>
+            <td style="background:#fff5f5">Missing</td>
+            <td class="l">
+              Lag-decay grid search results in 02C_lag_decay_grid_search.csv.
+              Formal experiment tracking (MLflow / Optuna study ID) not
+              committed. Rejected model variants not listed.
+            </td>
+          </tr>
+          <tr>
+            <td class="l">Run checksum / code commit hash</td>
+            <td style="background:#fff5f5">Missing</td>
+            <td class="l">
+              No hash linking notebook outputs to a specific git commit.
+              Required for audit-grade reproducibility.
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+    <p class="note">
+      To fully satisfy institutional reproducibility: (1) export a
+      <code>requirements.txt</code> with pinned versions; (2) add a
+      <code>MANIFEST.json</code> with file hashes for all input CSVs;
+      (3) record the git commit SHA at time of final report generation;
+      (4) export Optuna/CV study artefacts.
+    </p>
 
-    <h2 id="sec7">7. Conclusion</h2>
+    <h2 id="sec7">7. Conclusion and Institutional Decision Gate</h2>
     <p>
       This project delivers a coherent ML-driven equity signal framework that
       combines technical structure, sentiment augmentation, and cluster-aware
-      routing into a deployable research architecture. Across the full
-      implementation path, the learned meta-layer remains the primary source of
-      incremental alpha quality, with improved risk-adjusted behavior relative
-      to single-horizon controls.
+      routing. The learned meta-layer consistently improves directional accuracy
+      and gross risk-adjusted performance within the active strategy set.
     </p>
     <p>
-      The latest validation upgrades are encouraging but not yet sufficient for
-      a strong institutional alpha claim. Evidence should currently be treated
-      as <em>preliminary research-grade</em>: short effective OOS windows,
-      benchmark outperformance ambiguity, incomplete execution realism outputs,
-      and missing full reproducibility manifests materially limit deployment
-      confidence.
+      However, the evidence base does not currently meet the threshold for
+      institutional alpha approval. Key findings from the remediation audit:
     </p>
+    <ul>
+      <li>All active strategies are outperformed by Buy-and-Hold in the primary OOS window.</li>
+      <li>All strategies produce <strong>deeply negative net Sharpe</strong> under all three institutional cost scenarios (see Table 5A).</li>
+      <li>The walk-forward OOS covers only 5 windows × 20 days = 100 days (not the 195 days previously claimed).</li>
+      <li>Nested validation has not been implemented; the outer holdout may have been exposed to implicit selection.</li>
+      <li>Key reproducibility artefacts (pinned environment, file hashes, git commit) are missing.</li>
+    </ul>
+
+    <h3>7.1 Final Pass/Fail Checklist (Institutional Alpha Approval Gate)</h3>
+    <div class="table-wrap">
+      <table>
+        <caption>Table 7. Final Pass/Fail Checklist</caption>
+        <thead>
+          <tr>
+            <th class="l">Criterion</th>
+            <th>Required</th>
+            <th>Status</th>
+            <th class="l">Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l">Target variable and horizon defined</td>
+            <td>Must</td>
+            <td style="background:#e6f4ea">✓ PASS</td>
+            <td class="l">Next-day closing price (02D); T+1 log-return signal (02F)</td>
+          </tr>
+          <tr>
+            <td class="l">OOS window hierarchy explicit and consistent</td>
+            <td>Must</td>
+            <td style="background:#fff5f5">✗ FAIL</td>
+            <td class="l">Actual: 5 WFO windows × 20 days (100 days). Previous "195 days" claim corrected. Short OOS remains a blocker.</td>
+          </tr>
+          <tr>
+            <td class="l">Nested validation implemented</td>
+            <td>Must</td>
+            <td style="background:#fff5f5">✗ FAIL</td>
+            <td class="l">Inner/outer split not enforced; strategy selected on same WFO sample used for evaluation.</td>
+          </tr>
+          <tr>
+            <td class="l">R² metric justified or replaced</td>
+            <td>Must</td>
+            <td style="background:#e6f4ea">✓ PASS</td>
+            <td class="l">Near-1.0 R² on price levels explained; directional accuracy (51%) and CV MAE are financially relevant metrics.</td>
+          </tr>
+          <tr>
+            <td class="l">Alpha benchmark beyond buy-and-hold</td>
+            <td>Must</td>
+            <td style="background:#fff5f5">✗ FAIL</td>
+            <td class="l">BH Sharpe 6.12 (46d) and 2.61 (99d) both exceed active strategy Sharpe. No factor benchmark (Fama-French, industry) included.</td>
+          </tr>
+          <tr>
+            <td class="l">Positive net Sharpe under institutional costs</td>
+            <td>Must</td>
+            <td style="background:#fff5f5">✗ FAIL</td>
+            <td class="l">Net Sharpe range −2.97 to −4.58 across all 3 scenarios (Table 5A). All Deployable=False.</td>
+          </tr>
+          <tr>
+            <td class="l">Multi-scenario cost sensitivity</td>
+            <td>Must</td>
+            <td style="background:#e6f4ea">✓ PASS</td>
+            <td class="l">3 scenarios tested (5/10/20 bps × ADV caps) in 02F_stress_test_robust_wfo.csv.</td>
+          </tr>
+          <tr>
+            <td class="l">Statistical uncertainty intervals</td>
+            <td>Must</td>
+            <td style="background:#e6f4ea">✓ PASS</td>
+            <td class="l">Bootstrap 95% CI for Sharpe reported; binomial test on DHR; NW-corrected alpha t-stat.</td>
+          </tr>
+          <tr>
+            <td class="l">Leakage-control documentation</td>
+            <td>Must</td>
+            <td style="background:#ffe5b0">⚠ PARTIAL</td>
+            <td class="l">1-day lag applied to signals; timestamp gating described. Formal audit trail (with UTC timestamps) not committed.</td>
+          </tr>
+          <tr>
+            <td class="l">Turnover and holding-period reporting</td>
+            <td>Must</td>
+            <td style="background:#e6f4ea">✓ PASS</td>
+            <td class="l">Avg turnover per scenario in 02F_backtest_performance.csv (2.6–13.1%).</td>
+          </tr>
+          <tr>
+            <td class="l">Subperiod and regime analysis</td>
+            <td>Should</td>
+            <td style="background:#fff5f5">✗ MISSING</td>
+            <td class="l">VIX-regime figure present (02F_03). Formal subperiod alpha breakdown (bull/bear, pre/post volatility shock) not tabulated.</td>
+          </tr>
+          <tr>
+            <td class="l">Robustness checks (seeds, cluster counts, placebo)</td>
+            <td>Should</td>
+            <td style="background:#fff5f5">✗ MISSING</td>
+            <td class="l">Not implemented. Shuffled-label placebo test, seed sensitivity, and k-cluster variants needed.</td>
+          </tr>
+          <tr>
+            <td class="l">Full reproducibility manifest</td>
+            <td>Must</td>
+            <td style="background:#ffe5b0">⚠ PARTIAL</td>
+            <td class="l">Key artefacts listed in Table 6A. requirements.txt, file hashes, and git commit hash missing.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div
       class="callout"
       style="border-left-color: #b03030; background: #fff5f5"
     >
-      <strong>Institutional Decision Gate:</strong>
-      Suitable for continued ML research and controlled paper-trading only.
-      Promotion to live deployment requires completion of Sections 4.2A, 4.6,
-      5.4, 6.5, and 6.6 with fully reproducible evidence.
+      <strong>Institutional Decision Gate — Final Status: ❌ FAIL</strong><br/>
+      Reasons for FAIL:
+      <ul style="margin:6px 0 2px 16px">
+        <li>All active strategies produce negative net Sharpe under every institutional cost scenario.</li>
+        <li>All active strategies underperform the Buy-and-Hold benchmark in both OOS windows.</li>
+        <li>WFO covers only 100 OOS trading days across a single calendar year — insufficient for regime stability evidence.</li>
+        <li>Nested validation not implemented; selection bias cannot be excluded.</li>
+        <li>Mandatory reproducibility artefacts (environment hash, data hashes, git commit) are incomplete.</li>
+      </ul>
+      This framework is suitable for <strong>continued ML research and controlled paper-trading only</strong>.
+      Promotion to live deployment requires: (1) positive net Sharpe in at least 2 of 3 institutional cost
+      scenarios over ≥2 years of WFO OOS, (2) implemented nested validation, (3) complete reproducibility
+      manifest, and (4) factor attribution against Fama-French + industry benchmarks.
     </div>
 
     <div class="pb"></div>
