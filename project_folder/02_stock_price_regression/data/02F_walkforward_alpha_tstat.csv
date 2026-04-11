@@ -1,0 +1,2 @@
+Strategy,Window,N_oos,alpha_mean_daily,alpha_ann,alpha_tstat,alpha_ir,beta_mean,beta_std
+Learned Meta XGB (02F),23,24,-0.0004094938207367663,-0.1031924428256651,-0.5654155759291575,-1.8321558697161564,0.89161975830334,0.13248355893349892

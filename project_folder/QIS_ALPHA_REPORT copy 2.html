@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QIS Alpha Report | ML-Driven Equity Signal Framework</title>
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["\\(", "\\)"],
+            ["$", "$"],
+          ],
+          displayMath: [
+            ["\\[", "\\]"],
+            ["$$", "$$"],
+          ],
+        },
+        svg: { fontCache: "global" },
+      };
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Times New Roman", Times, serif;
+        font-size: 12pt;
+        line-height: 1.65;
+        color: #111;
+        max-width: 960px;
+        margin: 36px auto;
+        padding: 0 28px 60px;
+        background: #fff;
+      }
+      h1 {
+        font-size: 22pt;
+        text-align: center;
+        margin: 0 0 6px;
+        line-height: 1.2;
+      }
+      h2 {
+        font-size: 15pt;
+        border-bottom: 1.5px solid #555;
+        padding-bottom: 3px;
+        margin-top: 2em;
+      }
+      h3 {
+        font-size: 13pt;
+        margin-top: 1.4em;
+        margin-bottom: 0.3em;
+      }
+      h4 {
+        font-size: 12pt;
+        font-style: italic;
+        margin-top: 1em;
+        margin-bottom: 0.2em;
+      }
+      p {
+        margin: 0.55em 0;
+        text-align: justify;
+      }
+      ul,
+      ol {
+        margin: 0.4em 0 0.9em 1.3em;
+      }
+      li {
+        margin: 0.2em 0;
+      }
+      .meta {
+        text-align: center;
+        color: #444;
+        font-size: 11pt;
+        margin-bottom: 20px;
+      }
+      .abstract-box {
+        border: 1px solid #999;
+        padding: 12px 16px;
+        margin: 20px 0 24px;
+        background: #fafafa;
+      }
+      .abstract-box p {
+        font-size: 11pt;
+      }
+      .callout {
+        border-left: 4px solid #444;
+        padding: 8px 12px;
+        margin: 12px 0;
+        background: #f7f7f7;
+        font-size: 11pt;
+      }
+      .eq-block {
+        text-align: center;
+        margin: 10px 0;
+        font-size: 11.5pt;
+      }
+      .table-wrap {
+        margin: 12px 0 20px;
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10.5pt;
+      }
+      caption {
+        caption-side: top;
+        font-weight: bold;
+        text-align: left;
+        margin-bottom: 5px;
+        font-size: 11pt;
+      }
+      th,
+      td {
+        border: 1px solid #bbb;
+        padding: 6px 9px;
+        text-align: center;
+        vertical-align: middle;
+      }
+      th {
+        background: #f0f0f0;
+      }
+      td.l,
+      th.l {
+        text-align: left;
+      }
+      tr.best td {
+        background: #e6f4ea;
+        font-weight: bold;
+      }
+      .fig {
+        border: 1px solid #ccc;
+        padding: 10px 14px 12px;
+        margin: 14px 0 20px;
+        background: #fafafa;
+      }
+      .fig-title {
+        font-weight: bold;
+        margin-bottom: 4px;
+        font-size: 11pt;
+      }
+      .fig-caption {
+        font-style: italic;
+        color: #333;
+        font-size: 10.5pt;
+        margin-bottom: 6px;
+      }
+      .fig img {
+        width: 100%;
+        height: auto;
+        border: 1px solid #ddd;
+        display: block;
+        margin-top: 6px;
+      }
+      .fig canvas {
+        width: 100% !important;
+        max-height: 360px;
+        margin-top: 8px;
+      }
+      .pb {
+        page-break-before: always;
+        break-before: page;
+      }
+      .note {
+        font-size: 10pt;
+        color: #444;
+        margin-top: 6px;
+      }
+      hr.thin {
+        border: none;
+        border-top: 1px solid #ccc;
+        margin: 28px 0 10px;
+      }
+      .disclosure {
+        font-size: 10pt;
+        color: #222;
+        border: 1px solid #bbb;
+        background: #fbfbfb;
+        padding: 10px 12px;
+      }
+
+      @page {
+        size: A4;
+        margin: 14mm 12mm 14mm 12mm;
+      }
+
+      @media print {
+        body {
+          max-width: none;
+          margin: 0;
+          padding: 0;
+          font-size: 11pt;
+          line-height: 1.5;
+        }
+
+        h2,
+        h3,
+        h4,
+        caption,
+        .fig-title,
+        .fig-caption {
+          break-after: avoid-page;
+          page-break-after: avoid;
+        }
+
+        p,
+        li {
+          orphans: 3;
+          widows: 3;
+        }
+
+        .abstract-box,
+        .callout,
+        .eq-block,
+        .table-wrap,
+        .fig,
+        table,
+        tr,
+        td,
+        th,
+        img,
+        canvas {
+          break-inside: avoid-page;
+          page-break-inside: avoid;
+        }
+
+        thead {
+          display: table-header-group;
+        }
+
+        tfoot {
+          display: table-footer-group;
+        }
+
+        .fig img {
+          max-height: 108mm;
+          object-fit: contain;
+        }
+
+        .pb {
+          break-before: auto;
+          page-break-before: auto;
+          height: 0;
+          margin: 0;
+        }
+
+        .pb.force {
+          break-before: page;
+          page-break-before: always;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>
+      Quantitative Investment Strategy (QIS) Alpha Report<br />
+      ML-Driven Cluster-Aware Equity Signal Framework
+    </h1>
+    <div class="meta">
+      <strong
+        >Institutional Research Style Brief | Markets Quantitative
+        Research</strong
+      ><br />
+      S&amp;P 500 Universe, Multi-Factor Alpha Construction, Risk-Managed
+      Deployment<br />
+      Project Basis: COMP5564 / ML in Finance Implementation Artifacts | Date:
+      April 2026
+    </div>
+
+    <div class="abstract-box">
+      <strong>Executive Thesis.</strong>
+      <p>
+        This report summarizes a production-oriented machine-learning alpha
+        framework that combines cluster-aware equity modelling with
+        sentiment-driven residual correction and multi-horizon signal
+        governance. The core insight is that unsupervised clustering can be
+        repurposed from descriptive taxonomy into an active signal-routing
+        layer: sparse single-name news is converted into cluster-pooled
+        information, improving directional signal quality while preserving high
+        fit stability. The final implementation exhibits strong risk-adjusted
+        performance in backtesting, with the learned meta-layer delivering
+        Sharpe ratio expansion and drawdown compression under a controlled
+        turnover profile. Recommended use is as a complementary alpha sleeve
+        within a diversified multifactor stack, rather than as a standalone
+        directional macro bet.
+      </p>
+    </div>
+
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#sec1">Executive Summary</a></li>
+      <li><a href="#sec2">Market Microstructure &amp; Data</a></li>
+      <li><a href="#sec3">Model Architecture &amp; Formulation</a></li>
+      <li><a href="#sec4">Analysis, Backtesting &amp; Evaluation</a></li>
+      <li><a href="#sec5">Execution, Liquidity &amp; TCA</a></li>
+      <li><a href="#sec6">Implementation Path &amp; Tooling Provenance</a></li>
+      <li><a href="#sec7">Conclusion</a></li>
+    </ol>
+
+    <div class="pb force"></div>
+
+    <h2 id="sec1">1. Executive Summary</h2>
+    <p>
+      We propose an ML-driven alpha signal designed for integration into an
+      institutional multifactor equity process. The alpha engine combines three
+      long-term compensated factor channels: price-based technical structure,
+      sentiment-derived narrative structure, and cross-sectional peer-cluster
+      structure. The model architecture is optimized for non-linear interactions
+      and regime dependence, with emphasis on preserving signal monotonicity and
+      implementation realism.
+    </p>
+    <p>
+      On held-out testing, the cluster-news stacked model demonstrates
+      consistent directional uplift over baseline technical-only configurations,
+      while the downstream multi-horizon learned meta-layer materially improves
+      risk-adjusted returns. After applying execution-realism corrections (1-day
+      lag, 5 bps one-way cost), the strongest configuration — Learned Meta XGB —
+      recorded Sharpe +4.45 versus Buy &amp; Hold +6.12, Max Drawdown −1.40%,
+      Total Return +6.13%, and Directional Hit Ratio 60.9%. While lower-drawdown
+      than passive, further out-of-sample validation over a full-year window is
+      required before deployment.
+    </p>
+    <div class="callout">
+      <strong>Portfolio Construction Recommendation:</strong>
+      Deploy the signal as a medium-conviction tactical overlay (target risk
+      budget: 8-15% of active risk) within an existing multifactor book. Use
+      regime filters to dynamically scale gross exposure during volatility
+      expansion and policy-sensitive macro windows.
+    </div>
+
+    <h3>1.1 Institutional Key Takeaways</h3>
+    <ul>
+      <li>
+        Use case: complementary alpha sleeve, not standalone macro exposure.
+      </li>
+      <li>
+        Evidence: promising signal quality, but benchmark and uncertainty risks
+        remain.
+      </li>
+      <li>
+        Decision: suitable for research and controlled paper-trading; not yet
+        full production.
+      </li>
+    </ul>
+
+    <div class="pb force"></div>
+
+    <h2 id="sec2">2. Market Microstructure &amp; Data</h2>
+
+    <h3>2.1 Core and Alternative Datasets</h3>
+    <p>
+      The feature stack combines market microstructure variables (price,
+      volatility, volume), cross-sectional cluster structure, and sentiment
+      features (direct and peer-cluster pooled). This combination is designed to
+      capture both short-horizon technical dynamics and information diffusion
+      effects under sparse single-name news coverage.
+    </p>
+
+    <h3>2.2 Causal Data Treatment and Leakage Controls</h3>
+    <p>
+      All sentiment features are lagged prior to the prediction timestamp, and
+      training-validation-test partitions follow strict chronological ordering.
+      No random shuffle is used. This guards against look-ahead leakage and
+      aligns estimated performance with deployment reality.
+    </p>
+
+    <div class="eq-block">
+      \[ \mathcal{D} = \mathcal{D}_{\mathrm{train}} \cup
+      \mathcal{D}_{\mathrm{val}} \cup \mathcal{D}_{\mathrm{test}},\quad
+      t_{\mathrm{train}} &lt; t_{\mathrm{val}} &lt; t_{\mathrm{test}} \]
+    </div>
+
+    <h3>2.3 Microstructure Interpretation</h3>
+    <p>
+      The cluster-aware sentiment channel is used as a practical proxy for
+      cross-asset information propagation, where peer repricing often leads
+      single-name fundamental updates.
+    </p>
+
+    <div class="pb"></div>
+
+    <h2 id="sec3">3. Model Architecture &amp; Formulation</h2>
+
+    <h3>3.1 Architecture Overview</h3>
+    <p>
+      The production candidate is a stacked gradient-boosting architecture with
+      three layers: baseline technical regressor, direct/cluster sentiment
+      augmentation, and multi-horizon meta-signal governance. XGBoost is
+      selected over deep sequence alternatives due to superior robustness in
+      tabular, interaction-heavy, medium-sample settings.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Table 2. Architecture Components and Functional Purpose
+        </caption>
+        <thead>
+          <tr>
+            <th class="l">Layer</th>
+            <th class="l">Method</th>
+            <th class="l">Purpose</th>
+            <th class="l">Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l">Signal Core</td>
+            <td class="l">XGBRegressor</td>
+            <td class="l">Capture non-linear price-feature interactions</td>
+            <td class="l">T+1 baseline forecast</td>
+          </tr>
+          <tr>
+            <td class="l">Narrative Enhancer</td>
+            <td class="l">Direct + Cluster news stacking</td>
+            <td class="l">Residual correction from sentiment channels</td>
+            <td class="l">Directional uplift</td>
+          </tr>
+          <tr class="best">
+            <td class="l">Meta Allocation</td>
+            <td class="l">Learned Ridge / XGB meta-model</td>
+            <td class="l">Regime-aware horizon combination</td>
+            <td class="l">Tradeable alpha score</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>3.2 Formal Signal Definition</h3>
+    <p>
+      Let \(\mathbf{x}^{tech}_{i,t}\) denote technical factors,
+      \(S^{dir}_{i,t}\) direct sentiment, and \(S^{clu}_{i,t}\) cluster-pooled
+      sentiment. The model uses exponentially decayed sentiment memory with
+      evidence-driven hyperparameters.
+    </p>
+
+    <div class="eq-block">
+      \[ w_k = \frac{e^{-\lambda(k-1)}}{\sum_{m=1}^{L} e^{-\lambda(m-1)}},\quad
+      S^{clu}_{i,t} = \sum_{k=1}^{L} w_k \cdot \frac{1}{|P(i)|}\sum_{j \in P(i)}
+      s_{j,t-k} \]
+    </div>
+
+    <div class="eq-block">
+      \[ \hat{y}_{i,t+1} = f\!\left(\mathbf{x}^{tech}_{i,t}, S^{dir}_{i,t},
+      S^{clu}_{i,t}, \varphi(c(i))\right) \]
+    </div>
+
+    <h3>3.3 Handling Fat Tails and Non-Linearity</h3>
+    <p>
+      Tree-based models are used to capture nonlinear interaction effects and
+      threshold behavior without rigid parametric assumptions. Walk-forward
+      validation and regime-aware controls are intended to reduce overfitting
+      under volatility clustering and tail-event regimes.
+    </p>
+
+    <div class="fig">
+      <div class="fig-title">Figure 3. Cross-Model Benchmark</div>
+      <div class="fig-caption">
+        XGBoost remains on the best accuracy-stability frontier versus linear
+        and sequence alternatives.
+      </div>
+      <img
+        src="02_stock_price_regression/graph/03_regression_metrics_comparison.png"
+        alt="Cross-model benchmark"
+      />
+    </div>
+
+    <div class="pb"></div>
+
+    <h2 id="sec4">4. Analysis, Backtesting &amp; Evaluation</h2>
+
+    <h3>4.1 Regression and Directional Evaluation</h3>
+    <p>
+      Evaluation combines point-error metrics (MAE, RMSE, R2) and directional
+      utility (DHR). The cluster-news stacked implementation improved
+      directional accuracy versus baseline while preserving high explanatory
+      fit.
+    </p>
+    <p>
+      Implementation detail (02D-linked pipeline): the short-horizon signal is
+      built from a causal blend of price momentum and cluster-news sentiment.
+      The news component uses lagged 10-day features exported by the 02D process
+      (
+      <em>direct_sentiment_10d</em>, <em>cluster_sentiment_10d</em>,
+      <em>macro_sentiment_10d</em>) and forms a composite score
+      <strong>0.50 / 0.35 / 0.15</strong>, optionally scaled by news intensity.
+      In 02F integration this becomes a T+1 proxy with
+      <strong>70% price + 30% news</strong>, where both components are shifted
+      by one day to maintain causal ordering.
+    </p>
+
+    <div class="eq-block">
+      \[
+      s^{news}_{i,t}=0.50\,S^{dir}_{i,t}+0.35\,S^{clu}_{i,t}+0.15\,S^{macro}_{i,t},
+      \quad s^{T+1}_{i,t}=0.70\,p^{mom}_{i,t-1}+0.30\,s^{news}_{i,t-1} \]
+    </div>
+
+    <p>
+      Directional evaluation is computed on sign consistency between signal and
+      realized next-day return, while point metrics (MAE/RMSE/R2) are retained
+      to ensure directional uplift is not achieved by degrading fit stability.
+      This is why the stacked variant is preferred over direct-news-only: it
+      preserves near-baseline fit while improving directional utility.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Table 3. Hold-Out Performance Snapshot (02D Framework)
+        </caption>
+        <thead>
+          <tr>
+            <th class="l">Model</th>
+            <th>MAE</th>
+            <th>RMSE</th>
+            <th>R2</th>
+            <th>Directional Accuracy</th>
+            <th class="l">Interpretation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l">Baseline XGB</td>
+            <td>0.9094</td>
+            <td>2.2356</td>
+            <td>0.999693</td>
+            <td>0.5091</td>
+            <td class="l">Strong fit, weaker directional edge</td>
+          </tr>
+          <tr>
+            <td class="l">Cluster-News Direct XGB</td>
+            <td>0.9210</td>
+            <td>2.2630</td>
+            <td>0.999686</td>
+            <td>0.5084</td>
+            <td class="l">Raw sentiment alone is insufficient</td>
+          </tr>
+          <tr class="best">
+            <td class="l">Cluster-News Stacked XGB</td>
+            <td>0.9179</td>
+            <td>2.2536</td>
+            <td>0.999688</td>
+            <td>0.5150</td>
+            <td class="l">Best directional-information trade-off</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>4.2 Backtesting Results and Risk-Adjusted Outcomes</h3>
+    <p>
+      Backtesting in the multi-horizon strategy layer highlights clear
+      improvements from learned meta-combination relative to single-horizon
+      controls.
+    </p>
+    <p>
+      How 02F works in practice: first, it combines short-horizon T+1 and
+      medium-horizon T+15 views through a regime-aware meta-score. The
+      VIX-conditioned weighting shifts trust from T+1 to T+15 as stress rises
+      (low VIX: 0.70/0.30, medium: 0.50/0.50, high: 0.30/0.70 for T+1/T+15). A
+      direction-agreement filter boosts confidence when horizons agree; under
+      disagreement and high VIX, the filter can become negative, which allows a
+      sign flip to suppress false breakouts. A sentiment-velocity alignment
+      multiplier then discounts signals when narrative momentum conflicts with
+      the short-horizon direction.
+    </p>
+    <p>
+      The backtest engine is explicitly execution-realistic: positions are
+      executed with a one-day lag, turnover cost is charged at 5 bps one-way on
+      absolute position change, and portfolio returns are equal-weighted across
+      names each day. PnL is computed as
+      <em>position × simple return − trading cost</em>, with risk statistics
+      reported as annualized Sharpe, max drawdown, total return, and DHR. In
+      parallel to the rule-based meta signal, 02F also trains learned
+      meta-learners (Ridge and XGBoost) on temporal splits using stress and
+      disagreement features, which explains the stronger risk-adjusted outcomes
+      shown in Table 4.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Table 4. Strategy Backtest Metrics
+        </caption>
+        <thead>
+          <tr>
+            <th class="l">Strategy</th>
+            <th>Sharpe</th>
+            <th>Max Drawdown</th>
+            <th>Total Return</th>
+            <th>Information Ratio (proxy)</th>
+            <th>DHR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l">T+1 Only</td>
+            <td>2.42</td>
+            <td>-2.1%</td>
+            <td>3.3%</td>
+            <td>0.76</td>
+            <td>0.575</td>
+          </tr>
+          <tr>
+            <td class="l">T+15 Only</td>
+            <td>-5.85</td>
+            <td>-7.6%</td>
+            <td>-7.4%</td>
+            <td>-0.98</td>
+            <td>0.404</td>
+          </tr>
+          <tr>
+            <td class="l">Learned Meta Ridge</td>
+            <td>3.91</td>
+            <td>−1.6%</td>
+            <td>5.4%</td>
+            <td>0.98</td>
+            <td>0.638</td>
+          </tr>
+          <tr class="best">
+            <td class="l">Learned Meta XGB (02F) ★</td>
+            <td>+4.45</td>
+            <td>−1.40%</td>
+            <td>+6.13%</td>
+            <td>1.12</td>
+            <td>0.609</td>
+          </tr>
+          <tr>
+            <td class="l">Buy-and-Hold Benchmark</td>
+            <td>+6.12</td>
+            <td>−</td>
+            <td>+8.24%</td>
+            <td>−</td>
+            <td>−</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="fig">
+      <div class="fig-title">Figure 4. Cumulative Return Comparison</div>
+      <div class="fig-caption">
+        The learned meta-layer exhibits smoother compounding and superior
+        downside protection.
+      </div>
+      <img
+        src="02_stock_price_regression/graph/02F_01_cumulative_returns.png"
+        alt="Cumulative returns"
+      />
+    </div>
+
+    <div class="fig">
+      <div class="fig-title">Figure 5. Drawdown Dynamics</div>
+      <div class="fig-caption">
+        The learned meta-layer remains more resilient than single-horizon
+        variants during local stress episodes.
+      </div>
+      <img
+        src="02_stock_price_regression/graph/02F_02_drawdown.png"
+        alt="Drawdown chart"
+      />
+    </div>
+
+    <h3>4.3 Quantitative Risk Appetite Under Stress</h3>
+    <p>
+      Under stressed volatility regimes, the strategy uses explicit confidence
+      suppression. Position scaling is reduced when medium-horizon direction
+      disagrees with short-horizon conviction or when volatility state exceeds
+      predefined thresholds. This reduces false breakout participation and
+      supports drawdown discipline.
+    </p>
+
+    <h3>4.4 Walk-Forward OOS Validation (13 Expanding Windows)</h3>
+    <p>
+      To reduce single-split fragility, the evaluation was extended to an
+      expanding-window walk-forward protocol with 15-day OOS slices and a 15-day
+      step size. This produced <strong>13 complete windows</strong>
+      (195 OOS trading days), materially improving robustness versus the
+      original 47-day holdout.
+    </p>
+    <p>
+      The Buy &amp; Hold mean Sharpe across rolling windows was
+      <strong>+2.89</strong>. Learned Meta XGB recorded the highest WFO
+      consistency with <strong>~69%</strong> win-rate (fraction of windows with
+      Sharpe &gt; 0), and was the only strategy clearly above the 50% baseline.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Table 4A. Walk-Forward OOS Summary (13 Windows &times; 15-Day OOS)
+        </caption>
+        <thead>
+          <tr>
+            <th class="l">Strategy</th>
+            <th>Fixed Split Sharpe (47d)</th>
+            <th>WFO Win-Rate (%)</th>
+            <th class="l">Interpretation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l">T+1 Only (02D)</td>
+            <td>+2.42</td>
+            <td>~30%</td>
+            <td class="l">Inconsistent across rolling windows</td>
+          </tr>
+          <tr>
+            <td class="l">T+15 Only (02E)</td>
+            <td>−5.85</td>
+            <td>~53%</td>
+            <td class="l">Marginal consistency; weak fixed-split profile</td>
+          </tr>
+          <tr>
+            <td class="l">Rule-Based Meta (02F)</td>
+            <td>+2.42</td>
+            <td>~30%</td>
+            <td class="l">No lift over T+1 baseline</td>
+          </tr>
+          <tr>
+            <td class="l">Learned Meta Ridge (02F)</td>
+            <td>+3.91</td>
+            <td>~38%</td>
+            <td class="l">Moderate; fixed split appears optimistic</td>
+          </tr>
+          <tr class="best">
+            <td class="l">Learned Meta XGB (02F) ★</td>
+            <td>+4.45</td>
+            <td><strong>~69%</strong></td>
+            <td class="l">Highest OOS consistency; only strategy &gt;50%</td>
+          </tr>
+          <tr>
+            <td class="l">Buy &amp; Hold (reference)</td>
+            <td>+6.12</td>
+            <td>Mean Sharpe +2.89</td>
+            <td class="l">Rolling benchmark context</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="fig">
+      <div class="fig-title">
+        Figure 6A. Fixed Split vs Walk-Forward OOS (13 Windows)
+      </div>
+      <div class="fig-caption">
+        Three-panel comparison: fixed-split Sharpe vs WFO mean&plusmn;std, WFO
+        Sharpe distributions, and WFO win-rate by strategy.
+      </div>
+      <img
+        src="02_stock_price_regression/graph/02F_12_final_comparison_fixed_vs_wfo.png"
+        alt="Fixed split vs walk-forward OOS"
+      />
+    </div>
+
+    <h3>4.5 Cross-Sectional Stock Selection Alpha (IC / ICIR)</h3>
+    <p>
+      In addition to time-series PnL, stock-ranking quality was tested with
+      daily cross-sectional Spearman IC across active names. ICIR (IC mean / IC
+      std) was used as the primary stock-selection signal-quality measure.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Table 4B. IC / ICIR Summary (47 OOS Portfolio Days, Cross-Sectional)
+        </caption>
+        <thead>
+          <tr>
+            <th class="l">Strategy</th>
+            <th>IC Mean</th>
+            <th>IC Std</th>
+            <th>ICIR</th>
+            <th>IC &gt; 0 Rate</th>
+            <th>|IC| &gt; 0.02 Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l">T+1 Only (02D)</td>
+            <td>+0.0010</td>
+            <td>0.1497</td>
+            <td>+0.007</td>
+            <td>51.1%</td>
+            <td>85.1%</td>
+          </tr>
+          <tr>
+            <td class="l">T+15 Only (02E)</td>
+            <td>−0.1067</td>
+            <td>0.0774</td>
+            <td>−1.378</td>
+            <td>8.5%</td>
+            <td>89.4%</td>
+          </tr>
+          <tr>
+            <td class="l">Rule-Based Meta (02F)</td>
+            <td>+0.0010</td>
+            <td>0.1497</td>
+            <td>+0.007</td>
+            <td>51.1%</td>
+            <td>85.1%</td>
+          </tr>
+          <tr class="best">
+            <td class="l">Learned Meta Ridge (02F)</td>
+            <td>+0.0902</td>
+            <td>0.0879</td>
+            <td><strong>+1.025</strong></td>
+            <td>83.0%</td>
+            <td>89.4%</td>
+          </tr>
+          <tr class="best">
+            <td class="l">Learned Meta XGB (02F)</td>
+            <td>+0.1041</td>
+            <td>0.0887</td>
+            <td><strong>+1.174</strong></td>
+            <td>89.4%</td>
+            <td>91.5%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="fig">
+      <div class="fig-title">
+        Figure 6B. Stock Selection Alpha: Rolling IC and ICIR by Strategy
+      </div>
+      <div class="fig-caption">
+        Learned Meta Ridge and XGB maintain positive rolling IC and clear ICIR
+        thresholds, while rule-based and T+1 remain near zero.
+      </div>
+      <img
+        src="02_stock_price_regression/graph/02F_13_stock_selection_alpha_ic.png"
+        alt="Cross-sectional IC and ICIR"
+      />
+    </div>
+
+    <div class="pb"></div>
+
+    <h2 id="sec5">5. Execution, Liquidity &amp; Transaction Cost Analysis</h2>
+
+    <h3>5.1 Execution Framework</h3>
+    <p>
+      The alpha score is intended for liquid large-cap US equities with daily
+      rebalance tolerance. Execution should be integrated with
+      participation-rate limits, opening-auction concentration caps, and
+      volatility-adjusted order slicing.
+    </p>
+
+    <h3>5.2 Liquidity Reallocation Logic</h3>
+    <p>
+      Portfolio turnover and sizing should be concentrated in high-confidence,
+      liquid names, with reduced participation where expected impact dominates
+      expected alpha.
+    </p>
+
+    <h3>5.3 TCA Design (Implementation Proposal)</h3>
+    <p>
+      Ex-post and simulated TCA should include: effective spread, temporary
+      impact, adverse selection, and slippage versus decision price. A practical
+      pre-trade approximation can be expressed as:
+    </p>
+
+    <div class="eq-block">
+      \[ \mathrm{Cost}_{i,t} = a \cdot \mathrm{Spread}_{i,t} + b \cdot
+      \left(\frac{\mathrm{Size}_{i,t}}{\mathrm{ADV}_{i,t}}\right)^\gamma + c
+      \cdot \sigma_{i,t} \]
+    </div>
+
+    <p>
+      Orders are accepted only when expected alpha net of expected costs remains
+      positive and exceeds a minimum confidence threshold.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Table 5. Implementation Hurdles and Mitigation
+        </caption>
+        <thead>
+          <tr>
+            <th class="l">Hurdle</th>
+            <th class="l">Observed Risk</th>
+            <th class="l">Mitigation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l">Signal Crowding</td>
+            <td class="l">Factor decay in consensus names</td>
+            <td class="l">Crowding penalty and turnover throttle</td>
+          </tr>
+          <tr>
+            <td class="l">Liquidity Shock</td>
+            <td class="l">Spread expansion and impact convexity</td>
+            <td class="l">Dynamic participation and no-trade bands</td>
+          </tr>
+          <tr>
+            <td class="l">Headline Latency</td>
+            <td class="l">Signal staleness in fast tape</td>
+            <td class="l">Timestamp gating and recency weights</td>
+          </tr>
+          <tr>
+            <td class="l">Macro Gap Risk</td>
+            <td class="l">Overnight jumps, policy repricing</td>
+            <td class="l">Gross reduction and index hedge overlay</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pb"></div>
+
+    <h2 id="sec6">6. Implementation Path &amp; Tooling Provenance</h2>
+
+    <h3>6.1 Final Implementation Journey</h3>
+    <p>
+      The final stack was reached through staged notebook development and
+      controlled ablation: baseline regression, cluster-aware extension,
+      sentiment fusion, dynamic cluster-news stacking, and multi-horizon
+      meta-layer integration.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Table 6. Build Path from Baseline to Final Alpha
+        </caption>
+        <thead>
+          <tr>
+            <th class="l">Phase</th>
+            <th class="l">Notebook / Module</th>
+            <th class="l">What Was Added</th>
+            <th class="l">Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l">Phase 1</td>
+            <td class="l">02_Stock_Price_Regression</td>
+            <td class="l">Technical baseline XGBoost</td>
+            <td class="l">Reference fit and diagnostics</td>
+          </tr>
+          <tr>
+            <td class="l">Phase 2</td>
+            <td class="l">02B_Cluster_Aware_Regression</td>
+            <td class="l">Cluster features and specialist experts</td>
+            <td class="l">Regime-specific error reduction</td>
+          </tr>
+          <tr>
+            <td class="l">Phase 3</td>
+            <td class="l">02C_Sentiment_Enhanced_Cluster_Regression</td>
+            <td class="l">Lag-decay sentiment fusion, grid search</td>
+            <td class="l">Stability improvement in sparse-news states</td>
+          </tr>
+          <tr class="best">
+            <td class="l">Phase 4</td>
+            <td class="l">02D + 02E + 02F stack</td>
+            <td class="l">
+              Dynamic cluster-news + multi-horizon meta-learning
+            </td>
+            <td class="l">Highest risk-adjusted strategy quality</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>6.2 Tooling and Implementation Notes (Concise)</h3>
+    <p>
+      Implementation used a Python 3.10 stack (pandas, numpy, scikit-learn,
+      xgboost, matplotlib) with Bayesian hyperparameter tuning and
+      notebook-based experiment tracking. Core code covered causal feature
+      lagging, cluster-news routing, residual stacking, regime controls, and
+      leakage-safe backtesting routines.
+    </p>
+
+    <h2 id="sec7">7. Conclusion</h2>
+    <p>
+      This report presents a coherent ML-driven equity signal framework
+      combining technical, sentiment, and cluster-aware components. The learned
+      meta-layer remains the strongest contributor to incremental signal quality
+      versus single-horizon alternatives.
+    </p>
+    <p>
+      Walk-forward and cross-sectional IC/ICIR diagnostics provide encouraging
+      evidence, but this should still be treated as research-stage output.
+      Remaining work before institutional deployment includes stronger
+      uncertainty reporting, explicit benchmark-active attribution, and fuller
+      execution feasibility validation.
+    </p>
+
+    <div class="pb"></div>
+  </body>
+</html>

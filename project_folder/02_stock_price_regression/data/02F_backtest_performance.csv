@@ -1,6 +1,6 @@
-Strategy,Sharpe_Ratio,Max_Drawdown,Total_Return,DHR,N_Trades,BH_Sharpe,BH_Return
-T+1 Only (02D proxy),2.4197,-0.0206,0.0333,0.5745,47,6.0885,0.0818
-T+15 Only (02E),-5.8459,-0.0756,-0.074,0.4043,47,6.0885,0.0818
-Rule-Based Meta (02F),2.4197,-0.0206,0.0333,0.5745,47,6.0885,0.0818
-Learned Meta Ridge (02F),8.0997,-0.0081,0.1051,0.6809,47,6.0885,0.0818
-Learned Meta XGB (02F),4.7187,-0.0147,0.0645,0.617,47,6.0885,0.0818
+Strategy,Sharpe_Ratio,Max_Drawdown,Total_Return,Annual_Return,Annual_Vol,Avg_Turnover,DHR,N_Trades,TCost_OneWay_bps,BH_Sharpe,BH_Return
+T+1 Only (02D proxy),0.862,-0.0305,0.0118,0.0648,0.0762,0.3617,0.5217,46,5.0,6.117,0.0824
+T+15 Only (02E),0.8099,-0.0309,0.0104,0.0571,0.0718,0.9149,0.5,46,5.0,6.117,0.0824
+Rule-Based Meta (02F),0.862,-0.0305,0.0118,0.0648,0.0762,0.3617,0.5217,46,5.0,6.117,0.0824
+Learned Meta Ridge (02F),2.8482,-0.0235,0.0403,0.2362,0.0755,0.3191,0.5435,46,5.0,6.117,0.0824
+Learned Meta XGB (02F),2.1867,-0.0235,0.0589,0.1552,0.067,0.25,0.596,99,5.0,2.6058,0.071
