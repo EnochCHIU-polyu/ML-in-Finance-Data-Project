@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-H+/BLjJsg5LClAJTvd8GnB5JcinSd+Vn2n7wGDOmbwM=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QIS Alpha Report | ML-Driven Equity Signal Framework</title>
@@ -20,10 +21,15 @@
       };
     </script>
     <script
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+      src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"
+      integrity="sha384-KKWa9jJ1MZvssLeOoXG6FiOAZfAgmzsIIfw8BXwI9+kYm0lPCbC6yTQPBC00F1/L"
       crossorigin="anonymous"
     ></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.js"
+      integrity="sha384-tgbB5AKnszdcfwcZtTfuhR3Ko1XZdlDfsLtkxiiAZiVkkXCkFmp+FQFh+V/UTo54"
+      crossorigin="anonymous"
+    ></script>
     <style>
       *,
       *::before,
