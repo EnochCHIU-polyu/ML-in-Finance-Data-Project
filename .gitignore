@@ -1,0 +1,59 @@
+# Secrets and credentials — never commit these
+.env
+*.env
+.env.*
+credentials.py
+secrets.py
+*_api_key.py
+*_api_key.txt
+**/*_api_key*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# macOS metadata
+.DS_Store
+**/.DS_Store
+._*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+*.so
+
+# Jupyter
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Logs and caches
+*.log
+*.cache
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Node (from any tooling)
+node_modules/
+npm-debug.log*
+
+# Data files that may contain PII or large binaries
+*.csv
+!project_folder/news_data/data/sample_*.csv
