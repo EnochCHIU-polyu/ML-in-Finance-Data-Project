@@ -54,6 +54,5 @@ htmlcov/
 node_modules/
 npm-debug.log*
 
-# Data files that may contain PII or large binaries
+# Data files that may contain PII or large binaries — do not commit any CSV to the repo
 *.csv
-!project_folder/news_data/data/sample_*.csv
